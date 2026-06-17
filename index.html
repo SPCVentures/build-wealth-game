@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Long Game — Can Your Plan Go the Distance?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0C1418; --ink-2:#10202A; --ink-3:#16323F;
+    --ivory:#F2ECDE; --paper:#FBF7EC;
+    --brass:#C6A35A; --brass-hi:#E7CE92; --brass-dim:#8A7338;
+    --jade:#43936E; --jade-hi:#6FBF97;
+    --rust:#C0492F; --rust-hi:#E0795F;
+    --amber:#D9A441;
+    --mist:#9DB0B8; --mist-dim:#5E727B;
+    --line:rgba(198,163,90,.22);
+    --disp:'Fraunces',Georgia,serif;
+    --ui:'Inter',system-ui,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:var(--ui); color:var(--ivory);
+    background:
+      radial-gradient(120% 80% at 50% -10%, #16323F 0%, rgba(22,50,63,0) 55%),
+      radial-gradient(140% 90% at 50% 120%, #0a1d14 0%, rgba(10,29,20,0) 50%),
+      var(--ink);
+    background-attachment:fixed;
+    min-height:100vh; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* faint felt weave */
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; opacity:.5; z-index:0;
+    background-image:radial-gradient(rgba(255,255,255,.018) 1px, transparent 1px);
+    background-size:4px 4px;
+  }
+  .wrap{position:relative; z-index:1; max-width:680px; margin:0 auto; padding:0 20px 80px}
+
+  /* ---------- Masthead ---------- */
+  header.mast{padding:34px 0 14px; text-align:center}
+  .kicker{font-family:var(--mono); font-size:11px; letter-spacing:.34em; text-transform:uppercase;
+    color:var(--brass); display:flex; align-items:center; justify-content:center; gap:12px}
+  .kicker::before,.kicker::after{content:""; height:1px; width:34px; background:linear-gradient(90deg,transparent,var(--brass))}
+  .kicker::after{background:linear-gradient(90deg,var(--brass),transparent)}
+  h1.title{font-family:var(--disp); font-weight:600; font-size:clamp(38px,9vw,62px); line-height:.94;
+    margin:14px 0 6px; letter-spacing:-.01em; color:var(--paper)}
+  h1.title em{font-style:italic; color:var(--brass-hi)}
+  .sub{color:var(--mist); font-size:14.5px; max-width:440px; margin:0 auto}
+
+  /* ---------- Progress rail ---------- */
+  .rail{display:flex; align-items:center; justify-content:space-between; gap:14px;
+    margin:26px 0 18px; padding:12px 16px; border:1px solid var(--line); border-radius:14px;
+    background:linear-gradient(180deg,rgba(22,50,63,.5),rgba(16,32,42,.5)); backdrop-filter:blur(4px)}
+  .pips{display:flex; gap:9px; align-items:center}
+  .pip{width:11px; height:11px; border-radius:50%; border:1.5px solid var(--brass-dim);
+    transition:.35s; position:relative}
+  .pip.done{background:var(--brass); border-color:var(--brass); box-shadow:0 0 12px rgba(198,163,90,.5)}
+  .pip.active{border-color:var(--brass-hi); box-shadow:0 0 0 4px rgba(198,163,90,.12)}
+  .pip.active::after{content:""; position:absolute; inset:2px; border-radius:50%; background:var(--brass-hi);
+    animation:pulse 1.3s infinite}
+  @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+  .chips{display:flex; align-items:center; gap:7px; font-family:var(--mono); font-size:11px;
+    color:var(--mist); letter-spacing:.04em}
+  .chip{width:18px; height:18px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--brass-hi), var(--brass) 55%, var(--brass-dim));
+    border:1.5px dashed rgba(12,20,24,.55); box-shadow:0 1px 3px rgba(0,0,0,.4); transition:.4s}
+  .chip.spent{filter:grayscale(1) brightness(.5); box-shadow:none}
+
+  /* ---------- Stage cards ---------- */
+  .stage{display:none; animation:rise .5s cubic-bezier(.2,.7,.2,1)}
+  .stage.on{display:block}
+  @keyframes rise{from{opacity:0; transform:translateY(14px)}to{opacity:1; transform:none}}
+
+  .panel{background:linear-gradient(180deg,rgba(22,50,63,.62),rgba(13,25,32,.72));
+    border:1px solid var(--line); border-radius:20px; padding:24px 22px;
+    box-shadow:0 24px 60px -28px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.04)}
+
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:var(--brass)}
+  h2.head{font-family:var(--disp); font-weight:500; font-size:clamp(24px,5.4vw,32px); margin:6px 0 4px; color:var(--paper); letter-spacing:-.01em}
+  .lede{color:var(--mist); font-size:14px; margin:0 0 18px}
+
+  /* ---------- Intake form ---------- */
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:14px 16px}
+  .grid .full{grid-column:1/-1}
+  .field label{display:block; font-size:12px; color:var(--brass-hi); letter-spacing:.02em; margin-bottom:6px; font-weight:500}
+  .field .hint{display:block; font-size:11px; color:var(--mist-dim); margin-top:4px; font-family:var(--mono)}
+  /* info tooltip on a label */
+  .info-host{position:relative; display:inline}
+  .info-i{display:inline-flex; align-items:center; justify-content:center; vertical-align:super;
+    width:14px; height:14px; margin-left:1px; padding:0; border-radius:50%;
+    border:1px solid var(--brass); background:transparent; color:var(--brass-hi);
+    font-family:var(--mono); font-size:9px; line-height:1; cursor:pointer; transition:.15s}
+  .info-i:hover{background:var(--brass); color:var(--ink)}
+  .tip{position:absolute; left:0; top:140%; z-index:20; width:248px; padding:11px 13px;
+    background:#0a151b; border:1px solid var(--brass-dim); border-radius:11px;
+    box-shadow:0 16px 40px -16px #000; color:var(--ivory); font-family:var(--ui);
+    font-size:12px; font-weight:400; line-height:1.5; letter-spacing:0;
+    opacity:0; visibility:hidden; transform:translateY(-4px); transition:.18s; text-transform:none}
+  .tip.show{opacity:1; visibility:visible; transform:none}
+  .tip::before{content:""; position:absolute; left:14px; top:-5px; width:9px; height:9px;
+    background:#0a151b; border-left:1px solid var(--brass-dim); border-top:1px solid var(--brass-dim); transform:rotate(45deg)}
+  .btn-mini{margin-top:7px; width:100%; padding:8px 10px; font-family:var(--ui); font-size:12px; font-weight:600;
+    color:var(--brass-hi); background:rgba(198,163,90,.08); border:1px solid var(--line); border-radius:9px; cursor:pointer; transition:.15s}
+  .btn-mini:hover{border-color:var(--brass); background:rgba(198,163,90,.14)}
+  .btn-mini:active{transform:translateY(1px)}
+  input[readonly]{color:var(--brass-hi); background:rgba(198,163,90,.06); cursor:default}
+  .inp{position:relative}
+  .inp .dollar{position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--mist); font-family:var(--mono); font-size:14px; pointer-events:none}
+  .inp .pct{position:absolute; right:13px; top:50%; transform:translateY(-50%); color:var(--mist); font-family:var(--mono); font-size:14px; pointer-events:none}
+  input,select{width:100%; font-family:var(--mono); font-size:15px; color:var(--ivory);
+    background:rgba(8,16,20,.6); border:1px solid var(--line); border-radius:11px;
+    padding:12px 13px; outline:none; transition:.2s; -webkit-appearance:none; appearance:none}
+  .inp.has-dollar input{padding-left:26px}
+  .inp.has-pct input{padding-right:30px}
+  input:focus,select:focus{border-color:var(--brass); box-shadow:0 0 0 3px rgba(198,163,90,.14); background:rgba(8,16,20,.85)}
+  input::placeholder{color:var(--mist-dim)}
+  select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23C6A35A' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 13px center; cursor:pointer}
+  .divider{grid-column:1/-1; display:flex; align-items:center; gap:12px; margin:8px 0 2px;
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--mist-dim)}
+  .divider::after{content:""; flex:1; height:1px; background:var(--line)}
+  .toggle-row{grid-column:1/-1; display:flex; gap:10px; flex-wrap:wrap}
+  .toggle{flex:1; min-width:200px; display:flex; align-items:center; gap:11px; cursor:pointer;
+    border:1px solid var(--line); border-radius:12px; padding:12px 14px; background:rgba(8,16,20,.4); transition:.2s}
+  .toggle:hover{border-color:var(--brass-dim)}
+  .toggle.on{border-color:var(--brass); background:rgba(198,163,90,.08)}
+  .toggle .box{width:18px; height:18px; border-radius:5px; border:1.5px solid var(--brass-dim); flex:none; transition:.2s; position:relative}
+  .toggle.on .box{background:var(--brass); border-color:var(--brass)}
+  .toggle.on .box::after{content:"✓"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--ink); font-size:12px; font-weight:700}
+  .toggle .t-txt{font-size:12.5px; color:var(--ivory)}
+  .toggle .t-txt span{display:block; font-size:11px; color:var(--mist-dim); font-family:var(--mono)}
+
+  /* ---------- Buttons ---------- */
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:9px;
+    font-family:var(--ui); font-weight:600; font-size:15px; letter-spacing:.01em;
+    border:none; border-radius:13px; padding:15px 26px; cursor:pointer; transition:.2s; width:100%}
+  .btn-primary{color:var(--ink);
+    background:linear-gradient(180deg,var(--brass-hi),var(--brass) 60%,var(--brass-dim));
+    box-shadow:0 10px 26px -10px rgba(198,163,90,.7), inset 0 1px 0 rgba(255,255,255,.4)}
+  .btn-primary:hover{transform:translateY(-1px); box-shadow:0 14px 30px -10px rgba(198,163,90,.85)}
+  .btn-primary:active{transform:translateY(0)}
+  .btn-ghost{background:transparent; color:var(--brass-hi); border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--brass); background:rgba(198,163,90,.06)}
+  .btn-ghost:disabled{opacity:.35; cursor:not-allowed; color:var(--mist-dim)}
+  .btn-row{display:flex; gap:12px; margin-top:18px}
+  .btn-row .btn{width:auto; flex:1}
+  .mt{margin-top:18px}
+
+  /* ---------- Spin reel ---------- */
+  .reel-wrap{margin:6px 0 8px}
+  .reel{position:relative; height:122px; border-radius:16px; overflow:hidden;
+    background:linear-gradient(180deg,#081116,#0c1c24 50%,#081116);
+    border:1px solid var(--line);
+    box-shadow:inset 0 18px 30px -18px #000, inset 0 -18px 30px -18px #000}
+  .reel::before,.reel::after{content:""; position:absolute; left:0; right:0; height:40px; z-index:3; pointer-events:none}
+  .reel::before{top:0; background:linear-gradient(180deg,#081116,transparent)}
+  .reel::after{bottom:0; background:linear-gradient(0deg,#081116,transparent)}
+  .reel-line{position:absolute; left:14px; right:14px; top:50%; transform:translateY(-50%); height:54px;
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line); z-index:2; pointer-events:none;
+    box-shadow:0 0 30px rgba(198,163,90,.06)}
+  .reel-line::before, .reel-line::after{content:""; position:absolute; top:50%; transform:translateY(-50%);
+    border:7px solid transparent; }
+  .reel-line::before{left:-6px; border-left-color:var(--brass)}
+  .reel-line::after{right:-6px; border-right-color:var(--brass)}
+  .reel-face{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:0 26px; text-align:center; z-index:1}
+  .reel-face .opt{font-family:var(--disp); font-weight:500; font-size:clamp(18px,4.4vw,23px); color:var(--paper); line-height:1.15; transition:opacity .05s}
+  .reel.spinning .reel-face .opt{filter:blur(.6px)}
+  .reel.landed{animation:land .45s cubic-bezier(.2,1.3,.4,1)}
+  @keyframes land{0%{transform:scale(1.02)}40%{transform:scale(.985)}100%{transform:scale(1)}}
+  .reel.landed .reel-line{box-shadow:0 0 0 9999px rgba(198,163,90,.05), 0 0 26px rgba(198,163,90,.4)}
+  .reel.landed .reel-face .opt{color:var(--brass-hi); text-shadow:0 0 22px rgba(231,206,146,.35)}
+
+  .factor-note{font-size:13px; color:var(--mist); margin:14px 2px 0; min-height:20px}
+  .factor-note b{color:var(--brass-hi); font-family:var(--mono); font-weight:500}
+  .odds-strip{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px}
+  .odds{font-family:var(--mono); font-size:11px; padding:5px 9px; border:1px solid var(--line); border-radius:8px; color:var(--mist-dim)}
+  .odds.hot{color:var(--brass-hi); border-color:var(--brass-dim)}
+
+  /* recap of locked factors */
+  .ledger{margin-top:8px; border:1px solid var(--line); border-radius:14px; overflow:hidden}
+  .ledger-row{display:flex; align-items:flex-start; gap:12px; padding:13px 15px; border-bottom:1px solid var(--line)}
+  .ledger-row:last-child{border-bottom:none}
+  .ledger-row .n{font-family:var(--mono); font-size:12px; color:var(--brass); width:26px; flex:none}
+  .ledger-row .lab{font-size:12.5px; color:var(--mist); width:96px; flex:none}
+  .ledger-row .val{font-size:13.5px; color:var(--ivory); font-weight:500; flex:1}
+
+  /* ---------- Computing ---------- */
+  .computing{text-align:center; padding:30px 0}
+  .compute-num{font-family:var(--mono); font-size:46px; color:var(--brass-hi); letter-spacing:.02em}
+  .compute-lab{color:var(--mist); font-size:13px; margin-top:6px; font-family:var(--mono); letter-spacing:.1em}
+  .bar{height:6px; border-radius:99px; background:rgba(8,16,20,.7); overflow:hidden; margin:22px auto 0; max-width:320px}
+  .bar > i{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--brass-dim),var(--brass-hi)); border-radius:99px}
+
+  /* ---------- Results ---------- */
+  .scorecard{position:relative; border-radius:20px; padding:26px 22px; text-align:center; overflow:hidden;
+    background:linear-gradient(155deg,#13242e,#0b181f); border:1px solid var(--line);
+    box-shadow:0 30px 70px -34px #000}
+  .scorecard::before{content:""; position:absolute; inset:0; opacity:.5;
+    background:radial-gradient(80% 60% at 50% 0%, rgba(198,163,90,.16), transparent 60%)}
+  .scorecard > *{position:relative; z-index:1}
+  .verdict-eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.28em; text-transform:uppercase; color:var(--brass)}
+  .bignum{font-family:var(--disp); font-weight:600; font-size:clamp(72px,20vw,118px); line-height:.9; margin:6px 0 0; letter-spacing:-.02em}
+  .bignum .pct{font-size:.4em; vertical-align:super; color:var(--mist)}
+  .verdict{font-family:var(--disp); font-style:italic; font-size:clamp(22px,5vw,30px); margin:2px 0 4px}
+  .verdict-sub{color:var(--mist); font-size:13.5px; max-width:430px; margin:0 auto}
+  .grade-jade{color:var(--jade-hi)} .bignum.grade-jade{text-shadow:0 0 40px rgba(111,191,151,.35)}
+  .grade-amber{color:var(--amber)}  .bignum.grade-amber{text-shadow:0 0 40px rgba(217,164,65,.3)}
+  .grade-rust{color:var(--rust-hi)} .bignum.grade-rust{text-shadow:0 0 40px rgba(224,121,95,.3)}
+
+  .meter{height:9px; border-radius:99px; background:rgba(8,16,20,.7); margin:20px 0 6px; overflow:hidden; position:relative}
+  .meter > i{display:block; height:100%; border-radius:99px; transition:width 1.1s cubic-bezier(.2,.8,.2,1)}
+  .meter-ticks{display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; color:var(--mist-dim)}
+
+  .stats{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:18px}
+  .stat{border:1px solid var(--line); border-radius:13px; padding:14px}
+  .stat .k{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--mist-dim)}
+  .stat .v{font-family:var(--disp); font-weight:500; font-size:23px; color:var(--paper); margin-top:3px}
+  .stat .v.small{font-size:18px}
+
+  canvas{width:100%; height:auto; display:block; border-radius:14px; margin-top:8px; background:rgba(8,16,20,.45); border:1px solid var(--line)}
+  .chart-cap{font-family:var(--mono); font-size:11px; color:var(--mist-dim); text-align:center; margin-top:8px}
+
+  .read{font-size:14px; color:var(--ivory); line-height:1.62}
+  .read p{margin:0 0 12px}
+  .read .flag{display:flex; gap:11px; padding:13px 15px; border-radius:12px; margin:0 0 11px; align-items:flex-start}
+  .read .flag .ic{flex:none; width:22px; height:22px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700}
+  .flag.risk{background:rgba(192,73,47,.1); border:1px solid rgba(224,121,95,.3)}
+  .flag.risk .ic{background:var(--rust); color:#fff}
+  .flag.good{background:rgba(67,147,110,.1); border:1px solid rgba(111,191,151,.3)}
+  .flag.good .ic{background:var(--jade); color:#fff}
+  .flag .ftxt{font-size:13px; color:var(--ivory)}
+  .flag .ftxt b{color:var(--paper)}
+
+  .foot{text-align:center; margin-top:30px; font-family:var(--mono); font-size:10.5px; color:var(--mist-dim); letter-spacing:.04em; line-height:1.7}
+  .foot a{color:var(--brass-dim)}
+
+  .sect-label{font-family:var(--disp); font-weight:500; font-size:18px; color:var(--paper); margin:24px 0 10px}
+
+  /* help CTA (shown under 80%) */
+  .cta-help{display:flex; align-items:center; justify-content:space-between; gap:14px; width:100%;
+    margin:14px 0 4px; padding:16px 18px; text-align:left; cursor:pointer;
+    border:1px solid rgba(224,121,95,.45); border-radius:16px;
+    background:linear-gradient(180deg, rgba(192,73,47,.16), rgba(192,73,47,.06));
+    box-shadow:0 14px 34px -20px rgba(192,73,47,.7); transition:.2s}
+  .cta-help:hover{border-color:var(--rust-hi); transform:translateY(-1px)}
+  .cta-help-txt{font-size:14px; color:var(--ivory)}
+  .cta-help-txt b{color:var(--rust-hi)}
+  .cta-help-go{flex:none; font-family:var(--ui); font-weight:700; font-size:13.5px; color:var(--ink);
+    background:linear-gradient(180deg,var(--rust-hi),var(--rust)); padding:9px 14px; border-radius:10px; white-space:nowrap}
+
+  /* contact modal */
+  .modal-scrim{position:fixed; inset:0; z-index:50; display:none; align-items:center; justify-content:center;
+    padding:20px; background:rgba(5,9,11,.74); backdrop-filter:blur(5px)}
+  .modal-scrim.show{display:flex; animation:fade .2s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .modal-card{position:relative; width:100%; max-width:420px; max-height:92vh; overflow:auto;
+    background:linear-gradient(180deg,#15272f,#0c181f); border:1px solid var(--line); border-radius:20px;
+    padding:26px 24px; box-shadow:0 40px 90px -30px #000; animation:rise .35s cubic-bezier(.2,.7,.2,1)}
+  .modal-x{position:absolute; top:14px; right:14px; width:30px; height:30px; border-radius:50%;
+    border:1px solid var(--line); background:transparent; color:var(--mist); font-size:18px; line-height:1; cursor:pointer; transition:.15s}
+  .modal-x:hover{border-color:var(--brass); color:var(--brass-hi)}
+  .m-field{margin-top:14px}
+  .m-field label{display:block; font-size:12px; color:var(--brass-hi); margin-bottom:6px; font-weight:500}
+  .m-field input{width:100%; font-family:var(--ui); font-size:15px; color:var(--ivory);
+    background:rgba(8,16,20,.6); border:1px solid var(--line); border-radius:11px; padding:12px 13px; outline:none; transition:.2s}
+  .m-field input:focus{border-color:var(--brass); box-shadow:0 0 0 3px rgba(198,163,90,.14)}
+  .m-err{color:var(--rust-hi); font-size:12.5px; min-height:16px; margin:10px 0 0}
+  #c-submit{margin-top:6px}
+  .m-fine{font-family:var(--mono); font-size:10.5px; color:var(--mist-dim); text-align:center; margin:12px 0 0; line-height:1.6}
+  .m-verify{display:none}
+  .m-verify.show{display:block; animation:rise .25s ease}
+  #c-code{letter-spacing:.4em; text-align:center; font-family:var(--mono); font-size:20px}
+  .m-devnote{font-family:var(--mono); font-size:11px; color:var(--brass-hi); text-align:center; margin:10px 0 0;
+    border:1px dashed var(--brass-dim); border-radius:8px; padding:8px}
+  .m-done{display:none; text-align:center; padding:8px 0 4px}
+
+  /* sponsor / sponsorship slot */
+  .sponsor-slot{margin:14px 0; padding:14px 16px; border:1px solid var(--line); border-radius:14px;
+    background:rgba(8,16,20,.4); display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+  .spon-tag{font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--mist-dim); border:1px solid var(--line); border-radius:5px; padding:3px 7px; flex:none}
+  .spon-body{font-size:13px; color:var(--ivory); flex:1; min-width:140px}
+  .spon-cta{font-family:var(--ui); font-size:12.5px; color:var(--brass-hi); text-decoration:none; font-weight:600; flex:none}
+  .spon-cta:hover{text-decoration:underline}
+  .m-done.show{display:block; animation:rise .35s cubic-bezier(.2,.7,.2,1)}
+  .m-done-ic{width:54px; height:54px; margin:0 auto 14px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:26px; font-weight:700; color:var(--ink); background:linear-gradient(180deg,var(--jade-hi),var(--jade))}
+
+  /* advanced (fine-tune) collapsible */
+  .adv-toggle{display:flex; align-items:center; justify-content:space-between; width:100%; margin-top:16px;
+    padding:13px 16px; border:1px dashed var(--line); border-radius:12px; background:transparent; cursor:pointer;
+    color:var(--brass-hi); font-family:var(--ui); font-size:13.5px; font-weight:500; transition:.2s}
+  .adv-toggle:hover{border-color:var(--brass-dim); background:rgba(198,163,90,.05)}
+  .adv-chev{transition:transform .25s; font-size:12px}
+  .adv-toggle[aria-expanded="true"] .adv-chev{transform:rotate(180deg)}
+  .advanced{display:none; margin-top:12px}
+  .advanced.show{display:block; animation:rise .3s ease}
+
+  /* best-score badge */
+  .best-row{display:flex; align-items:center; justify-content:center; gap:10px; margin-top:14px; min-height:22px}
+  .best-pill{font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--mist);
+    border:1px solid var(--line); border-radius:99px; padding:5px 12px}
+  .best-pill b{color:var(--brass-hi)}
+  .newbest{font-family:var(--mono); font-size:11px; letter-spacing:.1em; color:var(--ink);
+    background:linear-gradient(180deg,var(--brass-hi),var(--brass)); border-radius:99px; padding:5px 11px; font-weight:700;
+    opacity:0; transform:scale(.7); transition:.3s}
+  .newbest.show{opacity:1; transform:scale(1); animation:pop .5s ease}
+  @keyframes pop{0%{transform:scale(.7)}45%{transform:scale(1.15)}100%{transform:scale(1)}}
+
+  /* mitigation panel */
+  .mit{margin:16px 0 4px; padding:18px 18px 16px; border:1px solid var(--line); border-radius:18px;
+    background:linear-gradient(180deg,rgba(67,147,110,.08),rgba(13,25,32,.4))}
+  .mit-head{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px}
+  .mit-sub{font-size:12.5px; color:var(--mist); margin-top:3px}
+  .mit-count{font-family:var(--disp); font-size:24px; color:var(--brass-hi); flex:none; line-height:1}
+  .mit-chips{display:grid; grid-template-columns:1fr 1fr; gap:9px}
+  .mit-chip{display:flex; align-items:center; gap:9px; padding:11px 12px; cursor:pointer; text-align:left;
+    border:1px solid var(--line); border-radius:12px; background:rgba(8,16,20,.4); transition:.18s; color:var(--ivory)}
+  .mit-chip:hover{border-color:var(--brass-dim)}
+  .mit-chip.on{border-color:var(--jade-hi); background:rgba(67,147,110,.16)}
+  .mit-chip.disabled{opacity:.4; cursor:not-allowed}
+  .mit-chip .mc-box{width:17px; height:17px; border-radius:5px; border:1.5px solid var(--brass-dim); flex:none; position:relative; transition:.18s}
+  .mit-chip.on .mc-box{background:var(--jade); border-color:var(--jade)}
+  .mit-chip.on .mc-box::after{content:"✓"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; font-size:11px; font-weight:700}
+  .mit-chip .mc-l{font-size:12.5px; line-height:1.25}
+
+  /* advisor adjustment panel */
+  .adj{margin:14px 0 4px; padding:18px; border:1px solid var(--line); border-radius:18px;
+    background:linear-gradient(180deg,rgba(198,163,90,.06),rgba(13,25,32,.4))}
+  .adj-opts{display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; margin-top:13px}
+  .adj-opt{display:flex; flex-direction:column; gap:4px; padding:11px 12px; cursor:pointer; text-align:left;
+    border:1px solid var(--line); border-radius:12px; background:rgba(8,16,20,.4); transition:.18s; color:var(--ivory)}
+  .adj-opt:hover{border-color:var(--brass-dim)}
+  .adj-opt.on{border-color:var(--brass); background:rgba(198,163,90,.14)}
+  .adj-opt.disabled{opacity:.4; cursor:not-allowed}
+  .adj-opt .ao-t{font-size:12.5px; font-weight:600; line-height:1.2}
+  .adj-opt .ao-s{font-family:var(--mono); font-size:10px; color:var(--mist-dim); letter-spacing:.02em}
+  .adj-slider-wrap{display:none; margin-top:16px}
+  .adj-slider-wrap.show{display:block; animation:rise .25s ease}
+  input[type=range]{-webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:99px;
+    background:rgba(8,16,20,.8); outline:none; cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; appearance:none; width:22px; height:22px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--brass-hi), var(--brass) 60%, var(--brass-dim));
+    border:2px solid var(--ink); box-shadow:0 2px 6px rgba(0,0,0,.5); cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; border:2px solid var(--ink);
+    background:var(--brass); cursor:pointer}
+  .adj-readout{text-align:center; margin-top:12px; font-family:var(--disp); font-size:20px; color:var(--brass-hi)}
+  .adj-timing{display:none; margin-top:14px; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center}
+  .adj-timing.show{display:flex}
+  .adj-timing-lbl{font-family:var(--mono); font-size:11px; color:var(--mist-dim)}
+  .adj-timing-btns{display:flex; gap:6px; flex-wrap:wrap}
+  .adj-tbtn{font-family:var(--mono); font-size:11px; padding:6px 10px; border:1px solid var(--line); border-radius:8px;
+    background:transparent; color:var(--mist); cursor:pointer; transition:.15s}
+  .adj-tbtn:hover{border-color:var(--brass-dim)}
+  .adj-tbtn.on{border-color:var(--brass); color:var(--brass-hi); background:rgba(198,163,90,.12)}
+
+  @media (max-width:560px){
+    .grid{grid-template-columns:1fr}
+    .stats{grid-template-columns:1fr 1fr}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001s !important; transition-duration:.05s !important}
+  }
+  :focus-visible{outline:2px solid var(--brass-hi); outline-offset:2px; border-radius:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <div class="kicker">A Retirement Stress Test</div>
+    <h1 class="title">The&nbsp;Long&nbsp;<em>Game</em></h1>
+    <p class="sub">Build your plan, then spin through the curveballs retirement throws. Five thousand simulated lifetimes decide whether you go the distance.</p>
+  </header>
+
+  <div class="rail" id="rail" style="display:none">
+    <div class="pips" id="pips"></div>
+    <div class="chips" id="chipBox">
+      <span>Re-spin</span>
+      <span class="chip" data-chip="0"></span>
+    </div>
+  </div>
+
+  <!-- ============ STAGE 0: INTAKE ============ -->
+  <section class="stage on" id="stage-intake">
+    <div class="panel">
+      <div class="eyebrow">Step One · The Assumptions</div>
+      <h2 class="head">Set the table</h2>
+      <p class="lede">Eight quick fields gets you playing — everything's pre-filled. In a hurry? Use a sample profile.</p>
+
+      <button class="btn btn-ghost" id="btn-quick" style="margin-bottom:18px">⚡ Quick play with a sample profile →</button>
+
+      <div class="grid">
+        <div class="field full">
+          <label for="f-name">First &amp; last name <span style="color:var(--mist-dim)">(optional)</span></label>
+          <div class="inp"><input id="f-name" type="text" placeholder="First name  Last name" autocomplete="name" /></div>
+        </div>
+
+        <div class="field">
+          <label for="f-age">Current age</label>
+          <div class="inp"><input id="f-age" type="number" inputmode="numeric" value="45" min="18" max="90" /></div>
+        </div>
+        <div class="field">
+          <label for="f-retire">Retirement age</label>
+          <div class="inp"><input id="f-retire" type="number" inputmode="numeric" value="65" min="40" max="90" /></div>
+        </div>
+
+        <div class="field full">
+          <label for="f-assets">Investable assets toda<span class="info-host">y<button type="button" class="info-i" id="assets-i" aria-label="What counts as investable assets?">i</button><span class="tip" id="assets-tip" role="tooltip">Include retirement accounts, savings accounts, checking accounts, investment accounts, old 401(k)s from past employers, and Robinhood / crypto.</span></span></label>
+          <div class="inp has-dollar"><span class="dollar">$</span><input id="f-assets" type="number" inputmode="numeric" value="750000" min="0" step="10000" /></div>
+        </div>
+
+        <div class="field">
+          <label for="f-income">Income <span style="color:var(--mist-dim)">(yr, pre-tax)</span></label>
+          <div class="inp has-dollar"><span class="dollar">$</span><input id="f-income" type="number" inputmode="numeric" value="220000" min="0" step="5000" /></div>
+        </div>
+        <div class="field">
+          <label for="f-risk">Portfolio</label>
+          <select id="f-risk">
+            <option value="cons">Conservative</option>
+            <option value="mod" selected>Moderate</option>
+            <option value="aggr">Aggressive</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-expnow">Spending now <span style="color:var(--mist-dim)">(yr)</span></label>
+          <div class="inp has-dollar"><span class="dollar">$</span><input id="f-expnow" type="number" inputmode="numeric" value="120000" min="0" step="5000" /></div>
+        </div>
+        <div class="field">
+          <label for="f-expret">Spending in retirement <span style="color:var(--mist-dim)">(yr)</span></label>
+          <div class="inp has-dollar"><span class="dollar">$</span><input id="f-expret" type="number" inputmode="numeric" value="100000" min="0" step="5000" /></div>
+        </div>
+      </div>
+
+      <button class="adv-toggle" id="btn-advanced" aria-expanded="false">
+        <span>Fine-tune — taxes, savings, Social Security, LTC</span><span class="adv-chev">▾</span>
+      </button>
+
+      <div class="advanced" id="advanced">
+        <div class="grid">
+          <div class="divider">Taxes &amp; Social Security</div>
+          <div class="field">
+            <label for="f-filing">Filing status</label>
+            <select id="f-filing">
+              <option value="single" selected>Single</option>
+              <option value="mfj">Married filing jointly</option>
+              <option value="mfs">Married filing separately</option>
+              <option value="hoh">Head of household</option>
+              <option value="qss">Qualifying surviving spouse</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-tax">Effective tax rate <span style="color:var(--mist-dim)">(auto)</span></label>
+            <div class="inp has-pct"><span class="pct">%</span><input id="f-tax" type="number" value="18" min="0" max="50" step="0.1" readonly /></div>
+            <span class="hint" id="tax-hint">est. effective federal rate · 2026 brackets</span>
+          </div>
+          <div class="field">
+            <label for="f-ss">Social Security <span style="color:var(--mist-dim)">(yr)</span></label>
+            <div class="inp has-dollar"><span class="dollar">$</span><input id="f-ss" type="number" inputmode="numeric" value="36000" min="0" step="1000" /></div>
+            <button type="button" class="btn-mini" id="btn-ss-est">Use system estimate</button>
+            <span class="hint" id="ss-hint">auto-estimated from your income</span>
+          </div>
+          <div class="field">
+            <label for="f-ssage">Social Security starts at age</label>
+            <div class="inp"><input id="f-ssage" type="number" inputmode="numeric" value="67" min="62" max="70" /></div>
+          </div>
+
+          <div class="divider">Savings &amp; contributions</div>
+          <div class="field">
+            <label for="f-save-annual">Saved per year — retirement</label>
+            <div class="inp has-dollar"><span class="dollar">$</span><input id="f-save-annual" type="number" inputmode="numeric" value="24000" min="0" step="1000" /></div>
+            <span class="hint">pre-tax · grows tax-deferred</span>
+          </div>
+          <div class="field">
+            <label for="f-save-monthly">Saved per month — taxable</label>
+            <div class="inp has-dollar"><span class="dollar">$</span><input id="f-save-monthly" type="number" inputmode="numeric" value="1000" min="0" step="100" /></div>
+            <span class="hint">taxed growth</span>
+          </div>
+          <div class="field"><label for="f-401k">% to 401(k)</label><div class="inp has-pct"><span class="pct">%</span><input id="f-401k" type="number" value="70" min="0" max="100" step="5" /></div></div>
+          <div class="field"><label for="f-403b">% to 403(b)</label><div class="inp has-pct"><span class="pct">%</span><input id="f-403b" type="number" value="0" min="0" max="100" step="5" /></div></div>
+          <div class="field"><label for="f-other">% to other plan</label><div class="inp has-pct"><span class="pct">%</span><input id="f-other" type="number" value="30" min="0" max="100" step="5" /></div></div>
+          <div class="field"><label for="f-match">Company match</label><div class="inp has-pct"><span class="pct">%</span><input id="f-match" type="number" value="4" min="0" max="25" step="0.5" /></div><span class="hint">% of salary</span></div>
+
+          <div class="divider">Horizon, debt &amp; long-term care</div>
+          <div class="field">
+            <label for="f-horizon">Plan through age</label>
+            <div class="inp"><input id="f-horizon" type="number" inputmode="numeric" value="95" min="80" max="105" /></div>
+          </div>
+          <div class="field">
+            <label for="f-liab">Total liabilities</label>
+            <div class="inp has-dollar"><span class="dollar">$</span><input id="f-liab" type="number" inputmode="numeric" value="150000" min="0" step="10000" /></div>
+            <span class="hint">debt service assumed in expenses</span>
+          </div>
+          <div class="field">
+            <label for="f-ltc-state">Long-term care — state</label>
+            <select id="f-ltc-state"><option value="">— National median —</option></select>
+            <span class="hint">private room · Genworth 2025</span>
+          </div>
+          <div class="field">
+            <label for="f-ltc">Private room cost, today <span style="color:var(--mist-dim)">(yr)</span></label>
+            <div class="inp has-dollar"><span class="dollar">$</span><input id="f-ltc" type="number" inputmode="numeric" value="129575" min="0" step="1000" /></div>
+            <span class="hint" id="ltc-hint">inflated to event year at 2%</span>
+          </div>
+
+          <div class="divider">Optional stress tests</div>
+          <div class="toggle-row">
+            <div class="toggle" id="tg-ss" data-tog="ssCut">
+              <span class="box"></span>
+              <span class="t-txt">Social Security shortfall<span>benefits cut 23% starting 2034</span></span>
+            </div>
+            <div class="toggle" id="tg-long" data-tog="longevity">
+              <span class="box"></span>
+              <span class="t-txt">Longevity surprise<span>live to age 100</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary mt" id="btn-play">Lock assumptions &amp; play →</button>
+      <p class="factor-note" id="intake-err" style="color:var(--rust-hi)"></p>
+    </div>
+  </section>
+
+  <!-- ============ STAGE 1-4: FACTORS (rendered dynamically) ============ -->
+  <section class="stage" id="stage-factor">
+    <div class="panel">
+      <div class="eyebrow" id="fx-eyebrow">Factor One of Four</div>
+      <h2 class="head" id="fx-title">Inflation</h2>
+      <p class="lede" id="fx-lede"></p>
+
+      <div class="reel-wrap">
+        <div class="reel" id="reel">
+          <div class="reel-line"></div>
+          <div class="reel-face"><span class="opt" id="reel-opt">Ready to spin</span></div>
+        </div>
+      </div>
+      <div class="odds-strip" id="fx-odds"></div>
+      <p class="factor-note" id="fx-note">Hit spin — the wheel decides which version of this risk you'll face.</p>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="btn-respin" disabled>↺ Re-spin <span id="respin-ct">(2)</span></button>
+        <button class="btn btn-primary" id="btn-spin">Spin</button>
+      </div>
+      <button class="btn btn-primary mt" id="btn-next" style="display:none">Lock it in →</button>
+    </div>
+  </section>
+
+  <!-- ============ STAGE 5: REVIEW + COMPUTE ============ -->
+  <section class="stage" id="stage-review">
+    <div class="panel">
+      <div class="eyebrow">The Hand You Were Dealt</div>
+      <h2 class="head" id="review-title">Four curveballs, locked</h2>
+      <p class="lede" id="review-lede"></p>
+      <div class="ledger" id="ledger"></div>
+      <button class="btn btn-primary mt" id="btn-run">Run 5,000 lifetimes →</button>
+      <div class="computing" id="computing" style="display:none">
+        <div class="compute-num" id="compute-num">0</div>
+        <div class="compute-lab">SIMULATED LIFETIMES</div>
+        <div class="bar"><i id="compute-bar"></i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STAGE 6: RESULTS ============ -->
+  <section class="stage" id="stage-results">
+    <div class="scorecard">
+      <div class="verdict-eyebrow" id="r-eyebrow">Probability of Success</div>
+      <div class="bignum" id="r-bignum">—<span class="pct">%</span></div>
+      <div class="verdict" id="r-verdict"></div>
+      <p class="verdict-sub" id="r-sub"></p>
+      <div class="meter"><i id="r-meter"></i></div>
+      <div class="meter-ticks"><span>0</span><span>50</span><span>75</span><span>90</span><span>100</span></div>
+      <div class="best-row"><span class="best-pill" id="best-pill" style="display:none">Best this session · <b id="best-pct">—</b></span><span class="newbest" id="newbest">★ New best</span></div>
+    </div>
+
+    <button class="cta-help" id="btn-help" style="display:none">
+      <span class="cta-help-txt"><b>Below 80%.</b> Want help improving your odds?</span>
+      <span class="cta-help-go">Talk to an advisor →</span>
+    </button>
+
+    <div class="mit" id="mit-panel">
+      <div class="mit-head">
+        <div><span class="eyebrow">Improve your odds</span><div class="mit-sub">Pick up to 3 advisor moves — watch the score react.</div></div>
+        <div class="mit-count"><span id="mit-n">0</span><span style="color:var(--mist-dim)">/3</span></div>
+      </div>
+      <div class="mit-chips" id="mit-chips"></div>
+    </div>
+
+    <div class="adj" id="adj-panel">
+      <span class="eyebrow">Life Adjustment</span>
+      <div class="mit-sub">A real-life change to pressure-test — pick one, then drag to set how far.</div>
+      <div class="adj-opts" id="adj-opts"></div>
+      <div class="adj-slider-wrap" id="adj-slider-wrap">
+        <input type="range" id="adj-slider" />
+        <div class="adj-readout"><span id="adj-val"></span></div>
+        <div class="adj-timing" id="adj-timing">
+          <span class="adj-timing-lbl">When it lands:</span>
+          <div class="adj-timing-btns" id="adj-timing-btns"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats" id="r-stats"></div>
+
+    <div class="sect-label">5,000 wealth paths</div>
+    <canvas id="chart" width="900" height="420"></canvas>
+    <p class="chart-cap" id="chart-cap"></p>
+
+    <div class="sect-label">What the simulation is telling you</div>
+    <div class="read" id="r-read"></div>
+
+    <div class="sponsor-slot" style="display:none"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="btn-spin-again">↻ Spin again</button>
+      <button class="btn btn-ghost" id="btn-replay">New plan</button>
+      <button class="btn btn-primary" id="btn-save">Save results</button>
+    </div>
+    <p class="foot">
+      The Long Game is an educational simulation, not financial advice or a guarantee of future results.
+      Annual returns are drawn by moving-block bootstrap from S&amp;P 500 total returns (1928–2024),
+      rescaled to each profile's expected return and volatility — preserving real-world fat tails and skew.
+      LTC costs use Genworth / CareScout 2025 state medians (private room); tax and Social Security estimates use 2026 federal figures and are simplified planning approximations, not filing-grade calculations.
+      Accounts are modeled in two buckets — tax-deferred (retirement) and taxable, assumed 70/30 of starting assets — with pre-tax contributions, tax-deferred growth taxed on withdrawal, and an annual drag on taxable gains.
+    </p>
+  </div>
+
+  <!-- ============ CONTACT GATE MODAL ============ -->
+  <div class="modal-scrim" id="modal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal-x" id="modal-x" aria-label="Close">×</button>
+      <div class="eyebrow" id="modal-eyebrow">Save your results</div>
+      <h2 class="head" id="modal-title">Where should we send it?</h2>
+      <p class="lede" id="modal-lede">Add your details to save a copy of this plan analysis.</p>
+      <div class="m-field">
+        <label for="c-name">Full name</label>
+        <input id="c-name" type="text" placeholder="Jane Investor" autocomplete="name" />
+      </div>
+      <div class="m-field">
+        <label for="c-email">Email</label>
+        <input id="c-email" type="email" placeholder="jane@email.com" autocomplete="email" />
+      </div>
+      <div class="m-field">
+        <label for="c-phone">Mobile number</label>
+        <input id="c-phone" type="tel" placeholder="(555) 123-4567" autocomplete="tel" inputmode="tel" />
+      </div>
+      <p class="m-err" id="c-err"></p>
+      <button class="btn btn-primary" id="c-submit">Text me a code</button>
+      <p class="m-fine">We'll text a one-time code to confirm your number. Standard message rates may apply. Your details are used to deliver your results and follow up about your plan.</p>
+
+      <div class="m-verify" id="c-verify">
+        <div class="m-field">
+          <label for="c-code">Enter the 6-digit code</label>
+          <input id="c-code" type="text" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="one-time-code" />
+        </div>
+        <p class="m-err" id="c-code-err"></p>
+        <p class="m-devnote" id="c-devnote" style="display:none"></p>
+        <button class="btn btn-primary" id="c-verify-btn">Verify &amp; unlock my plan</button>
+        <button class="btn-mini" id="c-resend" style="margin-top:10px">Resend code</button>
+      </div>
+
+      <div class="m-done" id="c-done">
+        <div class="m-done-ic">✓</div>
+        <h2 class="head" id="c-done-title">Saved.</h2>
+        <p class="lede" id="c-done-msg"></p>
+        <button class="btn btn-ghost" id="c-done-close">Done</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   THE LONG GAME — engine + flow
+   ============================================================ */
+
+/* ════════════════════════════════════════════════════════════════
+   ⚙️  CONFIG — the ONLY thing you ever edit here. Set these once,
+   after you deploy your backend (see the go-live steps). These are
+   plain URLs to YOUR backend, not secrets. NEVER paste a Twilio /
+   Airtable / any API key into this file — keys live in your backend's
+   environment settings, set once, and never appear in the browser.
+   Leave any value as "" to keep that piece in safe demo mode.
+   ════════════════════════════════════════════════════════════════ */
+const CONFIG = {
+  LEAD_ENDPOINT: "/.netlify/functions/save-lead",        // POST saved plans + contacts
+  OTP_SEND_ENDPOINT: "/.netlify/functions/send-code",     // request an SMS code
+  OTP_VERIFY_ENDPOINT: "/.netlify/functions/verify-code", // verify the entered code
+  SPONSOR: { show:false, label:"Sponsored", name:"", blurb:"", cta:"Learn more", url:"" }
+};
+
+const RISK = {
+  cons:{mean:0.050, vol:0.07, label:"Conservative"},
+  mod: {mean:0.065, vol:0.11, label:"Moderate"},
+  aggr:{mean:0.080, vol:0.15, label:"Aggressive"}
+};
+
+/* ---- 2026 federal income tax (Rev. Proc. 2025-32). Brackets are [upperLimit, rate]. ---- */
+const STD_DED = {single:16100, mfj:32200, mfs:16100, hoh:24150, qss:32200};
+const BRACKETS = {
+  single:[[12400,.10],[50400,.12],[105700,.22],[201775,.24],[256225,.32],[640600,.35],[Infinity,.37]],
+  mfj:   [[24800,.10],[100800,.12],[211400,.22],[403550,.24],[512450,.32],[768700,.35],[Infinity,.37]],
+  qss:   [[24800,.10],[100800,.12],[211400,.22],[403550,.24],[512450,.32],[768700,.35],[Infinity,.37]],
+  mfs:   [[12400,.10],[50400,.12],[105700,.22],[201775,.24],[256225,.32],[384350,.35],[Infinity,.37]],
+  hoh:   [[17700,.10],[67450,.12],[105700,.22],[201775,.24],[256200,.32],[640600,.35],[Infinity,.37]],
+};
+function federalTax(taxable, status){
+  const b=BRACKETS[status]||BRACKETS.single; let tax=0, prev=0;
+  for(const [cap,rate] of b){ if(taxable>prev){ tax+=(Math.min(taxable,cap)-prev)*rate; prev=cap; } else break; }
+  return tax;
+}
+function effectiveRate(income, status){
+  if(!(income>0)) return 0;
+  const taxable=Math.max(0, income - (STD_DED[status]||STD_DED.single));
+  return federalTax(taxable, status)/income;   // 0..1
+}
+
+/* ---- 2026 Social Security (FRA 67, born 1960+) ---- */
+const SS_WAGE_BASE=184500, SS_BEND1=1286, SS_BEND2=7749, SS_FRA=67;
+function estimateAnnualSS(income, claimAge){
+  const aime = Math.min(income, SS_WAGE_BASE)/12;                    // current salary as indexed-earnings proxy
+  const pia = 0.90*Math.min(aime,SS_BEND1)
+            + 0.32*Math.max(0, Math.min(aime,SS_BEND2)-SS_BEND1)
+            + 0.15*Math.max(0, aime-SS_BEND2);                       // monthly @ FRA
+  const a=Math.max(62, Math.min(70, claimAge||SS_FRA));
+  let factor=1;
+  if(a<SS_FRA){ const m=(SS_FRA-a)*12; factor=1-(Math.min(36,m)*(5/9) + Math.max(0,m-36)*(5/12))/100; }
+  else if(a>SS_FRA){ const m=Math.min(36,(a-SS_FRA)*12); factor=1+m*(2/3)/100; }
+  return Math.round(pia*factor*12/100)*100;                          // annual, to nearest $100
+}
+
+/* ---- Nursing-home private-room annual cost by state (Genworth 2025 Cost of Care). ---- */
+const LTC_NATIONAL=129575;
+const LTC_STATE={
+ "Alabama":85476,"Alaska":436536,"Arizona":94896,"Arkansas":80304,"California":146004,
+ "Colorado":116712,"Connecticut":172272,"Delaware":135420,"District of Columbia":158000,
+ "Florida":115524,"Georgia":102204,"Hawaii":163884,"Idaho":104028,"Illinois":85476,
+ "Indiana":104028,"Iowa":89424,"Kansas":82488,"Kentucky":97452,"Louisiana":72996,
+ "Maine":157308,"Maryland":140904,"Massachusetts":162420,"Michigan":118260,"Minnesota":157308,
+ "Mississippi":89424,"Missouri":71172,"Montana":97452,"Nebraska":97452,"Nevada":118260,
+ "New Hampshire":151476,"New Jersey":151476,"New Mexico":104028,"New York":162420,
+ "North Carolina":104028,"North Dakota":151476,"Ohio":100380,"Oklahoma":72996,"Oregon":140904,
+ "Pennsylvania":135420,"Rhode Island":157308,"South Carolina":97452,"South Dakota":97452,
+ "Tennessee":94896,"Texas":90288,"Utah":118260,"Vermont":151476,"Virginia":118260,
+ "Washington":140904,"West Virginia":151476,"Wisconsin":123912,"Wyoming":104028
+};
+
+/* ---- Factor definitions (his four, exactly) ---- */
+const FACTORS = [
+  {
+    key:"inflation", title:"Inflation", eyebrow:"Factor One of Six",
+    lede:"How fast does the cost of your life rise — every single year, for the rest of it?",
+    options:[
+      {label:"2% inflation, every year",  val:0.02, tag:"2%"},
+      {label:"3% inflation, every year",  val:0.03, tag:"3%"},
+      {label:"5% inflation, every year",  val:0.05, tag:"5%"},
+      {label:"7% inflation, every year",  val:0.07, tag:"7%"},
+    ],
+    summary:o=>`${(o.val*100).toFixed(0)}% every year`,
+    ledgerLabel:"Inflation"
+  },
+  {
+    key:"badOffset", title:"A 30% Down Market", eyebrow:"Factor Two of Six",
+    lede:"Every retirement meets one brutal year — a 30% drop. The only question is when it lands.",
+    options:[
+      {label:"30% crash the year you retire", val:0,  tag:"At retirement"},
+      {label:"30% crash 5 years into retirement", val:5,  tag:"+5 yrs"},
+      {label:"30% crash 7 years into retirement", val:7,  tag:"+7 yrs"},
+      {label:"30% crash 10 years into retirement", val:10, tag:"+10 yrs"},
+    ],
+    summary:o=> o.val===0 ? "At retirement" : `${o.val} yrs in`,
+    ledgerLabel:"Market crash"
+  },
+  {
+    key:"lifeEvent", title:"Passing or Long-Term Care", eyebrow:"Factor Three of Six",
+    lede:"How health and longevity play out. Most often: a long life with no major care event. Odds reflect roughly how common each path actually is.",
+    options:[
+      {label:"A long life, no major care event",            deathOff:null, ltcAge:null, tag:"Neither", w:58},
+      {label:"Passing 10 years before retirement · no LTC", deathOff:-10, ltcAge:null, tag:"Pass −10", w:3},
+      {label:"Passing 5 years before retirement · no LTC",  deathOff:-5,  ltcAge:null, tag:"Pass −5",  w:4},
+      {label:"Passing 5 years after retirement · no LTC",   deathOff:5,   ltcAge:null, tag:"Pass +5",  w:6},
+      {label:"Passing 10 years after retirement · no LTC",  deathOff:10,  ltcAge:null, tag:"Pass +10", w:7},
+      {label:"LTC at age 70 · 6 years · not passing early", deathOff:null, ltcAge:70, tag:"LTC 70", w:3},
+      {label:"LTC at age 75 · 6 years · not passing early", deathOff:null, ltcAge:75, tag:"LTC 75", w:5},
+      {label:"LTC at age 82 · 6 years · not passing early", deathOff:null, ltcAge:82, tag:"LTC 82", w:5},
+      {label:"LTC at age 85 · 6 years · not passing early", deathOff:null, ltcAge:85, tag:"LTC 85", w:4},
+    ],
+    weighted:true,
+    summary:o=> o.deathOff===null && o.ltcAge===null ? "Neither"
+      : o.deathOff!==null
+      ? (o.deathOff<0 ? `Passing ${-o.deathOff} yrs pre-retire` : `Passing ${o.deathOff} yrs post-retire`)
+      : `LTC age ${o.ltcAge}, 6 yrs`,
+    ledgerLabel:"Health & longevity"
+  },
+  {
+    key:"curveball", title:"The Curveball", eyebrow:"Factor Four of Six",
+    lede:"One adverse twist that life can throw at a plan. A few of these tie to the year your crash landed.",
+    options:[
+      {label:"Family support — $30k/yr for 5 yrs from the crash", cb:"family",  tag:"Family $30k"},
+      {label:"Job loss — forced to retire 5 years early",         cb:"jobLoss", tag:"Job loss"},
+      {label:"Panic sell — 3 years in cash after the crash",      cb:"panic",   tag:"Panic sell"},
+      {label:"Major purchase — $100k, 5 years into retirement",   cb:"major",   tag:"Big purchase"},
+      {label:"Extended bear — 3 more down years after the crash", cb:"bear",    tag:"Bear market"},
+    ],
+    summary:o=>o.tag,
+    ledgerLabel:"The curveball"
+  },
+  {
+    key:"windfall", title:"Chance of a Lifetime", eyebrow:"Factor Five of Six",
+    lede:"One spin for the upside. Most of the time, life doesn't change — but every so often it does. The bigger the windfall, the rarer it is.",
+    options: (()=>{
+      // weight ~ inversely to payout; "no event" dominates; mega-wins vanishingly rare
+      const W={6000000:1,5000000:1,3000000:2,2000000:3,1000000:6,500000:14,250000:24,100000:36,75000:40,50000:44,25000:50};
+      const f=a=> a>=1e6 ? "$"+(a/1e6)+"M" : "$"+(a/1e3)+"k";
+      const o=[]; const add=(label,amt,bucket,tag,w)=>o.push({label,amt,bucket,tag,w:w!=null?w:(W[amt]||6)});
+      add("Startup you founded sells for $5M+",5000000,"tx","Startup $5M+",1);
+      add("You win a $6M lottery jackpot",6000000,"tx","Lottery $6M",1);
+      [3000000,1000000,500000,250000,100000,75000,50000,25000].forEach(a=>add(`Your private company IPOs — options worth ${f(a)}`,a,"tx",`IPO ${f(a)}`));
+      [2000000,500000,250000,100000].forEach(a=>add(`An early-stage startup bet pays off — ${f(a)}`,a,"tx",`Angel ${f(a)}`));
+      [1000000,500000,250000,100000].forEach(a=>add(`Lawsuit settlement — ${f(a)}`,a,"tx",`Lawsuit ${f(a)}`));
+      [2000000,1000000,500000,250000,100000].forEach(a=>add(`Life-insurance proceeds — ${f(a)}`,a,"tx",`Life ins ${f(a)}`));
+      [1000000,500000,250000,100000].forEach(a=>add(`Divorce settlement — ${f(a)}`,a,"tx",`Divorce ${f(a)}`));
+      [1000000,500000,250000,100000].forEach(a=>add(`Home sale — ${f(a)} in net proceeds`,a,"tx",`Home ${f(a)}`));
+      [1000000,500000,250000,100000,75000].forEach(a=>add(`IP / royalty windfall — ${f(a)}`,a,"tx",`Royalty ${f(a)}`));
+      [1000000,500000,250000,100000].forEach(a=>add(`Family trust payout — ${f(a)}`,a,"tx",`Trust ${f(a)}`));
+      [1000000,500000,250000,100000].forEach(a=>add(`Inherited IRA / 401(k), pre-tax — ${f(a)}`,a,"td",`IRA inh ${f(a)}`));
+      [1000000,500000,250000,100000].forEach(a=>add(`Inherited brokerage account — ${f(a)}`,a,"tx",`Brkg inh ${f(a)}`));
+      [1000000,500000,250000,100000].forEach(a=>add(`Inherited Roth, tax-free — ${f(a)}`,a,"tx",`Roth inh ${f(a)}`));
+      add("No life-changing event",0,null,"No event",1100);
+      return o;
+    })(),
+    weighted:true, hideOdds:true, shortReel:true,
+    summary:o=> o.amt>0 ? o.tag : "No event",
+    ledgerLabel:"Chance of a lifetime"
+  },
+  {
+    key:"windfallTiming", title:"When It Lands", eyebrow:"Factor Six of Six",
+    lede:"Timing changes everything — the earlier the money arrives, the more years it has to compound before and during retirement.",
+    options:[
+      {label:"10 years before retirement", offset:-10, tag:"−10 yrs"},
+      {label:"5 years before retirement",  offset:-5,  tag:"−5 yrs"},
+      {label:"2 years before retirement",  offset:-2,  tag:"−2 yrs"},
+      {label:"2 years after retirement",   offset:2,   tag:"+2 yrs"},
+      {label:"5 years after retirement",   offset:5,   tag:"+5 yrs"},
+    ],
+    summary:o=> o.skipped ? "—" : (o.offset<0 ? `${-o.offset} yrs pre-retire` : `${o.offset} yrs post-retire`),
+    ledgerLabel:"Windfall timing"
+  },
+];
+
+/* The combined factor already encodes a consistent, mutually-exclusive outcome. */
+function resolveEvents(){
+  const le = chosen.lifeEvent;
+  return { ltcAge: le ? le.ltcAge : null, deathOff: le ? le.deathOff : null, note:"" };
+}
+
+/* ---- Age-scaled odds for the passing / LTC factor ----
+   Survivors per 100,000 (≈ US unisex period life table), interpolated.
+   Passing-window weights = conditional probability of dying in a ~5-yr band
+   around each option age; LTC weights = P(reach that age) × an age-rising
+   incidence of a long (6-yr) care episode; "Neither" takes the residual. */
+const F_LIFE = FACTORS.find(f=>f.key==="lifeEvent");
+const SURV=[[40,95500],[45,94500],[50,92500],[55,89500],[60,85500],[65,80500],[70,73000],[75,64000],[80,51000],[85,36500],[90,20000],[95,8000],[100,2500],[105,400]];
+function survAt(age){
+  if(age<=SURV[0][0]) return SURV[0][1];
+  if(age>=SURV[SURV.length-1][0]) return SURV[SURV.length-1][1];
+  for(let i=0;i<SURV.length-1;i++){ const [a0,s0]=SURV[i], [a1,s1]=SURV[i+1];
+    if(age>=a0 && age<=a1){ const t=(age-a0)/(a1-a0); return s0+(s1-s0)*t; } }
+  return 400;
+}
+function applyLifeWeights(){
+  const A=P.age||45, R=P.retireAge||65, sA=survAt(A);
+  const ltcInc={70:0.030,75:0.045,82:0.060,85:0.060};
+  let pass=0, ltc=0;
+  F_LIFE.options.forEach(o=>{
+    if(o.deathOff===null && o.ltcAge===null) return;          // "Neither" set below
+    if(o.deathOff!==null){
+      const c=R+o.deathOff, lo=Math.max(A, c-2.5), hi=c+2.5;
+      const p = lo>=hi ? 0 : Math.max(0,(survAt(lo)-survAt(hi))/sA);  // die in this window
+      o.w=Math.max(0, Math.round(p*1000)); pass+=p;
+    } else {
+      const p=(survAt(o.ltcAge)/sA)*(ltcInc[o.ltcAge]||0.05);         // reach age × long-care incidence
+      o.w=Math.max(0, Math.round(p*1000)); ltc+=p;
+    }
+  });
+  const neither=Math.max(0.05, 1-pass-ltc);
+  F_LIFE.options.forEach(o=>{ if(o.deathOff===null && o.ltcAge===null) o.w=Math.round(neither*1000); });
+  return {neither, pass, ltc};
+}
+
+/* ---- State ---- */
+let P = {};                 // plan assumptions
+let chosen = {};            // factor key -> option object
+let stageIdx = 0;           // 0..3 across factors
+let respins = 1;
+let currentLanded = false;
+let lastResult = null;
+
+/* ---------- Helpers ---------- */
+const $ = s => document.querySelector(s);
+const fmt$ = n => "$" + Math.round(n).toLocaleString();
+const fmt$k = n => {
+  const a = Math.abs(n);
+  if (a >= 1e6) return "$" + (n/1e6).toFixed(n/1e6>=10?1:2) + "M";
+  if (a >= 1e3) return "$" + Math.round(n/1e3) + "K";
+  return "$" + Math.round(n);
+};
+/* Returns as randomness: moving-block bootstrap of real market history.
+   S&P 500 nominal total returns 1928-2024 (price + reinvested dividends).
+   We standardize these to z-scores, sample them in 5-year blocks to preserve
+   real sequencing and fat tails, then rescale each draw to the chosen
+   profile's expected return and volatility. */
+const HIST=[43.81,-8.30,-25.12,-43.84,-8.64,49.98,-1.19,46.74,31.94,-35.34,29.28,-1.10,-10.67,-12.77,19.17,25.06,19.03,35.82,-8.43,5.20,5.70,18.30,30.81,23.68,18.15,-1.21,52.56,32.60,7.44,-10.46,43.72,12.06,0.34,26.64,-8.81,22.61,16.42,12.40,-9.97,23.80,10.81,-8.24,3.56,14.22,18.76,-14.31,-25.90,37.00,23.83,-6.98,6.51,18.52,31.74,-4.70,20.42,22.34,6.15,31.24,18.49,5.81,16.54,31.48,-3.06,30.23,7.49,9.97,1.33,37.20,22.68,33.10,28.34,20.89,-9.03,-11.85,-21.97,28.36,10.74,4.83,15.61,5.48,-36.55,25.94,14.82,2.10,15.89,32.15,13.52,1.36,11.96,21.83,-4.38,31.49,18.40,28.71,-18.11,26.29,25.02].map(x=>x/100);
+const H_MEAN=HIST.reduce((a,b)=>a+b,0)/HIST.length;
+const H_STD=Math.sqrt(HIST.reduce((a,b)=>a+(b-H_MEAN)*(b-H_MEAN),0)/HIST.length);
+const HIST_Z=HIST.map(x=>(x-H_MEAN)/H_STD);   // standardized historical surprises
+const BLOCK=5;
+function makeZGen(){
+  let buf=[];
+  return ()=>{
+    if(buf.length===0){
+      const s=Math.floor(Math.random()*(HIST_Z.length-BLOCK+1));
+      for(let k=0;k<BLOCK;k++) buf.push(HIST_Z[s+k]);
+    }
+    return buf.shift();
+  };
+}
+
+/* ---------- Monte Carlo: two-bucket + 4th-factor curveball + advisor mitigations ---------- */
+const TD_SHARE=0.70;   // assumed share of starting assets held in tax-deferred accounts
+const TAX_DRAG=0.5;    // fraction of a taxable account's annual gain taxed each year
+const LTC_PREMIUM=4500; // annual cost of LTC insurance (today's $), replaces out-of-pocket
+function applyMit(base, m){
+  const p={...base};
+  if(m.delay2) p.retireAge+=2;
+  if(m.spend10) p.expRet*=0.90;
+  if(m.save5k) p.saveAnnual+=10000;
+  if(m.ssDelay){ p.ss*=1.24; p.ssAge=70; }
+  return p;
+}
+function simulate(runs, capturePaths, mit, adj){
+  const m=mit||{}, a0=adj||{}, f=chosen;
+  const p=applyMit(P, m);
+  const infl=f.inflation.val;
+  const badAge=p.retireAge + f.badOffset.val;
+  const ev=resolveEvents();
+  let horizon=p.horizon;
+  if(p.opts.longevity) horizon=Math.max(horizon,100);
+  const deathAge=(ev.deathOff!==null)? p.retireAge + ev.deathOff : Infinity;
+  const endAge=Math.min(deathAge, horizon);
+  const ltcStart=ev.ltcAge, ltcYears=6;
+
+  // 4th-factor curveball (adverse twists only)
+  const cb = f.curveball ? f.curveball.cb : "none";
+  const jobLoss=cb==="jobLoss", panic=cb==="panic", bear=cb==="bear",
+        family=cb==="family", major=cb==="major";
+
+  // end-of-game advisor adjustment (player picks ONE)
+  const meanAdj = a0.type==="eqLow" ? -(p.mean*a0.value) : 0;     // returns a0.value % BELOW expected (relative)
+  const expF    = a0.type==="expHigh" ? (1+a0.value) : 1;     // higher RETIREMENT spending, 3%–30%
+  const adjInhAmt = a0.type==="inherit" ? P.assets*a0.value : 0;   // 10%–50% of assets
+  const adjInhAge = a0.type==="inherit" ? Math.max(P.age, p.retireAge + (a0.off!=null?a0.off:-5)) : -999;
+
+  // 5th-factor windfall (Chance of a Lifetime) + 6th-factor timing
+  const wf = f.windfall, wfAmt = (wf && wf.amt)?wf.amt:0, wfBucket = wf?wf.bucket:null;
+  const wfOff = (f.windfallTiming && typeof f.windfallTiming.offset==="number") ? f.windfallTiming.offset : -5;
+  const wfAge = Math.max(P.age, p.retireAge + wfOff);
+
+  let success=0; const legacies=[]; const depAges=[];
+  const paths=[];
+
+  for(let r=0;r<runs;r++){
+    let td=p.assets*TD_SHARE, tx=p.assets*(1-TD_SHARE), cash=0, ruined=false, depAge=null;
+    const zg=makeZGen();
+    const path=(r<capturePaths)?[td+tx]:null;
+    for(let a=p.age;a<endAge;a++){
+      const yrs=a-p.age, inflF=Math.pow(1+infl,yrs);
+      const bridge = jobLoss && a>=p.retireAge-5 && a<p.retireAge;   // job loss → early-retire bridge
+      if(adjInhAmt>0 && a===adjInhAge) tx += adjInhAmt;              // advisor inheritance inflow
+      if(wfAmt>0 && a===wfAge){ if(wfBucket==="td") td+=wfAmt; else tx+=wfAmt; } // chance-of-a-lifetime windfall, at chosen timing
+
+      if(a<p.retireAge && !bridge){
+        // ---- accumulation ----
+        const Cpre=p.saveAnnual, match=Math.min(p.matchPct/100*p.income, Cpre), Ctax=p.saveMonthly*12;
+        const tax=p.tax*Math.max(0, p.income-Cpre);                  // pre-tax contribs lower taxable income
+        const takeHome=p.income - Cpre - tax;
+        const exp=p.expNow*inflF;                                    // higher-expense adjustment applies to retirement only
+        const residual=takeHome - exp - Ctax;
+        td += Cpre + match;  tx += Ctax;
+        if(residual>=0) tx += residual;
+        else { let need=-residual; const fromTx=Math.min(tx,need); tx-=fromTx; need-=fromTx; if(need>0) td-=need/(1-p.tax); }
+      } else {
+        // ---- retirement (or job-loss bridge) ----
+        if(m.buffer && a===p.retireAge){ const want=Math.min(tx, 2*Math.max(0,p.expRet*expF - p.ss)); cash+=want; tx-=want; } // fund 2-yr cash buffer at retirement
+        const exp=(bridge? p.expNow : p.expRet*expF)*inflF;
+        let extra=0;
+        if(!bridge){
+          if(family && a>=badAge && a<badAge+5) extra += 30000*inflF;          // family support, 5 yrs from crash
+          if(major && a===p.retireAge+5)        extra += 100000*inflF;         // major purchase, +5 yrs
+          if(ltcStart!==null && a>=ltcStart && a<ltcStart+ltcYears && !m.ltcins) extra += p.ltcToday*Math.pow(1.02,a-p.age);
+          if(m.ltcins) extra += LTC_PREMIUM*inflF;                              // insurance premium replaces out-of-pocket
+          if(m.parttime && a>=p.retireAge && a<p.retireAge+5) extra -= 25000*inflF; // part-time income, first 5 yrs
+        }
+        let ss=(!bridge && a>=p.ssAge)? p.ss*inflF : 0;
+        if(p.opts.ssCut && ss>0){ const calYear=(new Date()).getFullYear()+yrs; if(calYear>=2034) ss*=0.77; }
+        let need=exp+extra-ss;
+        if(need>0){
+          if(m.buffer && a>=badAge && a<=badAge+3 && cash>0){ const fc=Math.min(cash,need); cash-=fc; need-=fc; } // shield the crash window
+          const fromTx=Math.min(tx,need); tx-=fromTx; need-=fromTx;       // taxable first (no income tax)
+          if(need>0){ const gross=need/(1-p.tax); if(gross>td){ruined=true;depAge=a;break;} td-=gross; }  // then tax-deferred, grossed up
+        } else tx += (-need);
+      }
+      if(m.buffer && a===badAge+4 && cash>0){ tx+=cash; cash=0; }     // reinvest leftover buffer after the danger window
+      if(td<-1){ruined=true;depAge=a;break;}
+      // ---- returns (same market hits both buckets; taxable carries a tax drag) ----
+      let ret=(p.mean+meanAdj) + p.vol*zg();
+      if(a===badAge && a>=p.retireAge) ret=-0.30;                                         // the 30% crash
+      else if((panic||bear) && a>badAge && a<=badAge+3 && a>=p.retireAge) ret = panic?0.02:-0.10; // post-crash years
+      td *= (1+ret);
+      tx *= (ret>0)? (1 + ret*(1-TAX_DRAG*p.tax)) : (1+ret);
+      cash *= 1.03;
+      if(path)path.push(Math.max(0,td+tx+cash));
+    }
+    const ending=td+tx+cash;
+    if(ruined || ending<=0){depAges.push(depAge||a);} else {success++; legacies.push(ending);}
+    if(path)paths.push(path);
+  }
+  legacies.sort((a,b)=>a-b);
+  const q=(arr,x)=> arr.length? arr[Math.min(arr.length-1,Math.floor(arr.length*x))]:0;
+  depAges.sort((a,b)=>a-b);
+  return {
+    runs, successRate:success/runs, fails:runs-success,
+    medLegacy:q(legacies,0.5), p10Legacy:q(legacies,0.10), p90Legacy:q(legacies,0.90),
+    medDepAge: depAges.length? depAges[Math.floor(depAges.length/2)] : null,
+    endAge, deathAge, badAge, ltcStart, infl, deathOff:ev.deathOff, cb, retireAge:p.retireAge, windfallAmt:wfAmt, windfallAge:wfAge, windfallOff:wfOff,
+    adjType:a0.type||null, adjVal:a0.value||0, adjOff:(a0.off!=null?a0.off:-5),
+    ltcEntryCost: ltcStart!==null ? p.ltcToday*Math.pow(1.02, Math.max(0,ltcStart-p.age)) : 0,
+    paths, startAge:p.age
+  };
+}
+
+/* ---------- Intake ---------- */
+$("#btn-play").addEventListener("click", ()=>{
+  const num = id => parseFloat($("#"+id).value);
+  const age=num("f-age"), retire=num("f-retire"), horizon=num("f-horizon");
+  const err=$("#intake-err");
+  if([age,retire,horizon].some(isNaN) || retire<=age || horizon<=retire){
+    err.textContent="Check the ages — they should run current < retirement < plan-through.";
+    return;
+  }
+  const risk=RISK[$("#f-risk").value];
+  P={
+    name:($("#f-name").value||"This household").trim(),
+    age, retireAge:retire, horizon,
+    assets:num("f-assets")||0, liab:num("f-liab")||0,
+    income:num("f-income")||0, tax:(num("f-tax")||0)/100,
+    ss:num("f-ss")||0, ssAge:num("f-ssage")||retire,
+    expNow:num("f-expnow")||0, expRet:num("f-expret")||0,
+    mean:risk.mean, vol:risk.vol, riskLabel:risk.label,
+    ltcToday:num("f-ltc")||0, filing:$("#f-filing").value,
+    saveAnnual:num("f-save-annual")||0, saveMonthly:num("f-save-monthly")||0,
+    matchPct:num("f-match")||0,
+    pct401k:num("f-401k")||0, pct403b:num("f-403b")||0, pctOther:num("f-other")||0,
+    opts:{ ssCut:$("#tg-ss").classList.contains("on"), longevity:$("#tg-long").classList.contains("on") }
+  };
+  err.textContent="";
+  chosen={}; stageIdx=0; respins=1; activeMit={}; activeAdj={type:null,val:0,off:-5}; bestPct=0; renderChips(); renderPips();
+  $("#rail").style.display="flex";
+  show("stage-factor"); loadFactor();
+});
+
+/* optional toggles */
+document.querySelectorAll(".toggle").forEach(t=>{
+  t.addEventListener("click", ()=> t.classList.toggle("on"));
+});
+
+/* ---------- Intake interactivity ---------- */
+// Populate state dropdown
+(function(){
+  const sel=$("#f-ltc-state");
+  Object.keys(LTC_STATE).forEach(st=>{
+    const o=document.createElement("option"); o.value=st; o.textContent=st; sel.appendChild(o);
+  });
+})();
+// State → LTC private-room cost
+$("#f-ltc-state").addEventListener("change", e=>{
+  const st=e.target.value;
+  const cost = st ? LTC_STATE[st] : LTC_NATIONAL;
+  $("#f-ltc").value=cost;
+  $("#ltc-hint").textContent = (st ? `${st} median` : "national median") + " · inflated to event year at 2%";
+});
+// Auto effective tax rate from income + filing status
+function refreshTax(){
+  const inc=parseFloat($("#f-income").value)||0;
+  const status=$("#f-filing").value;
+  const rate=effectiveRate(inc, status);
+  $("#f-tax").value=(rate*100).toFixed(1);
+  const labels={single:"single",mfj:"married/joint",mfs:"married/separate",hoh:"head of household",qss:"surviving spouse"};
+  $("#tax-hint").textContent=`est. effective federal rate · ${labels[status]} · 2026`;
+}
+$("#f-income").addEventListener("input", refreshTax);
+$("#f-filing").addEventListener("change", refreshTax);
+refreshTax();   // initialize on load
+// Social Security system estimate
+let ssTouched=false;
+$("#f-ss").addEventListener("input", ()=>{ ssTouched=true; });
+function estimateSS(){
+  const inc=parseFloat($("#f-income").value)||0;
+  const claim=parseFloat($("#f-ssage").value)||SS_FRA;
+  const est=estimateAnnualSS(inc, claim);
+  $("#f-ss").value=est;
+  $("#ss-hint").textContent=`est. ${fmt$(est)}/yr — claiming at ${claim}, FRA 67 (2026 formula)`;
+}
+$("#btn-ss-est").addEventListener("click", ()=>{ estimateSS(); ssTouched=false; });
+// auto-track SS to income/claim age until the user overrides it
+$("#f-income").addEventListener("input", ()=>{ if(!ssTouched) estimateSS(); });
+$("#f-ssage").addEventListener("input", ()=>{ if(!ssTouched) estimateSS(); });
+estimateSS(); ssTouched=false;   // seed from the default income
+// Advanced (fine-tune) collapsible
+$("#btn-advanced").addEventListener("click", ()=>{
+  const open=$("#advanced").classList.toggle("show");
+  $("#btn-advanced").setAttribute("aria-expanded", open?"true":"false");
+});
+// Quick play — jump straight in with the sample profile
+$("#btn-quick").addEventListener("click", ()=>{ $("#btn-play").click(); });
+// Info tooltip
+(function(){
+  const btn=$("#assets-i"), tip=$("#assets-tip");
+  const close=()=>tip.classList.remove("show");
+  btn.addEventListener("click", e=>{ e.preventDefault(); e.stopPropagation(); tip.classList.toggle("show"); });
+  document.addEventListener("click", e=>{ if(!tip.contains(e.target) && e.target!==btn) close(); });
+  btn.addEventListener("keydown", e=>{ if(e.key==="Escape") close(); });
+})();
+
+/* ---------- Factor stage ---------- */
+function loadFactor(){
+  const fx=FACTORS[stageIdx];
+  $("#fx-eyebrow").textContent=fx.eyebrow;
+  $("#fx-title").textContent=fx.title;
+  $("#fx-lede").textContent=fx.lede;
+  $("#reel-opt").textContent="Ready to spin";
+  $("#reel").className="reel";
+  $("#fx-note").innerHTML="Hit spin — the wheel decides which version of this risk you'll face.";
+  if(fx.key==="lifeEvent"){
+    const w=applyLifeWeights();
+    $("#fx-note").innerHTML=`Tuned to age <b>${P.age}</b>: about <b>${Math.round(w.neither*100)}%</b> a long life with no major care event, <b>${Math.round(w.pass*100)}%</b> an early passing, <b>${Math.round(w.ltc*100)}%</b> a six-year care event.`;
+  }
+  $("#btn-spin").style.display="";
+  $("#btn-spin").textContent="Spin";
+  $("#btn-next").style.display="none";
+  $("#btn-respin").disabled=true;
+  $("#respin-ct").textContent="("+respins+")";
+  currentLanded=false;
+  // odds strip (suppressed for big weighted factors)
+  if(fx.hideOdds){
+    $("#fx-odds").innerHTML = `<span class="odds hot">★ big wins are rare</span><span class="odds">most spins land small or nothing</span>`;
+  } else {
+    $("#fx-odds").innerHTML = fx.options.map(o=>`<span class="odds">${o.tag || o.label}</span>`).join("");
+  }
+  renderPips();
+}
+
+let spinTimer=null;
+function spin(){
+  const fx=FACTORS[stageIdx];
+  const reel=$("#reel"), opt=$("#reel-opt");
+  reel.className="reel spinning";
+  $("#btn-spin").disabled=true; $("#btn-respin").disabled=true;
+  $("#btn-next").style.display="none";
+  if(spinTimer) clearTimeout(spinTimer);
+  const total=1700 + Math.random()*500;
+  let t=0, step=50;
+  const tick=()=>{
+    const o=fx.options[Math.floor(Math.random()*fx.options.length)];
+    opt.textContent = fx.shortReel ? o.tag : o.label;
+    t+=step;
+    if(t > total*0.6) step+=16;          // decelerate toward the end
+    if(t>=total){ land(fx); return; }
+    spinTimer=setTimeout(tick, step);
+  };
+  spinTimer=setTimeout(tick, step);
+}
+function land(fx){
+  if(fx.key==="lifeEvent") applyLifeWeights();   // age-scaled odds
+  let pick;
+  if(fx.weighted){
+    const total=fx.options.reduce((s,o)=>s+(o.w||1),0);
+    let r=Math.random()*total;
+    pick=fx.options[fx.options.length-1];
+    for(const o of fx.options){ if((r-=(o.w||1))<=0){ pick=o; break; } }
+  } else {
+    pick=fx.options[Math.floor(Math.random()*fx.options.length)];
+  }
+  chosen[fx.key]=pick;
+  $("#reel-opt").textContent = fx.shortReel ? pick.tag : pick.label;
+  $("#reel").className="reel landed";
+  $("#btn-spin").disabled=false;
+  $("#btn-spin").style.display="none";
+  $("#btn-respin").disabled = respins<=0;
+  $("#btn-next").style.display="";
+  $("#btn-next").textContent = stageIdx<FACTORS.length-1 ? "Lock it in →" : "See the hand you were dealt →";
+  currentLanded=true;
+  noteForPick(fx, pick);
+  renderPips();
+}
+function noteForPick(fx,pick){
+  let msg="";
+  if(fx.key==="inflation"){
+    const yrs=P.horizon-P.age;
+    const mult=Math.pow(1+pick.val,yrs);
+    msg=`At ${(pick.val*100).toFixed(0)}%, a <b>${fmt$(P.expRet)}</b> lifestyle costs <b>${fmt$(P.expRet*mult)}</b> by age ${P.horizon}.`;
+  } else if(fx.key==="badOffset"){
+    msg = pick.val===0
+      ? `The worst possible timing — a crash <b>the year withdrawals begin</b>. This is sequence-of-returns risk at its sharpest.`
+      : `A 30% drop hits at age <b>${P.retireAge+pick.val}</b>. Earlier is far more damaging than later.`;
+  } else if(fx.key==="lifeEvent"){
+    if(pick.ltcAge!==null){
+      const entry=P.ltcToday*Math.pow(1.02, Math.max(0,pick.ltcAge-P.age));
+      msg=`Life runs long — no early passing — and meets a care event at age <b>${pick.ltcAge}</b>. Inflated at 2%, year-one cost is <b>${fmt$(entry)}</b>, roughly <b>${fmt$(entry*6.2)}</b> over six years. The plan must fund full longevity <b>and</b> this bill.`;
+    } else {
+      const da=P.retireAge+pick.deathOff;
+      msg = pick.deathOff<0
+        ? `Passing at age <b>${da}</b> — before retirement, and no care event. The portfolio likely survives; the real question becomes what survivors inherit. This is the life-insurance lens.`
+        : `Passing at age <b>${da}</b>, no care event. A shorter plan is easier to fund — read the score as a legacy test, not proof the money lasts a full retirement.`;
+    }
+  } else if(fx.key==="curveball"){
+    const crashAge=P.retireAge + (chosen.badOffset? chosen.badOffset.val : 0);
+    const notes={
+      family:`A $30k/yr drain for 5 years starting at the crash (age ${crashAge}), rising with inflation. Two hits at once — the market and the family.`,
+      jobLoss:`Income and contributions stop at age ${P.retireAge-5}; you bridge five years on the portfolio before SS. Forced early retirement is one of the costliest curveballs.`,
+      panic:`After the crash you sell and sit in cash for 3 years, missing the rebound. Locking in losses is usually worse than the crash itself.`,
+      major:`A ${fmt$(100000)} purchase 5 years into retirement (inflated to that year) — a lump-sum withdrawal right as sequence risk still bites.`,
+      bear:`The crash doesn't stop — 3 more down years (~−10% each) follow it. A prolonged grind, not a single shock.`,
+      eqLow:`Every year's return runs 3% below expected. Over decades, the return assumption is the single biggest swing factor — this is the punishing side of it.`,
+      expLow:`You spend 3% less, every year. A small, permanent lifestyle trim that compounds in your favor.`,
+      eqHigh:`Every year's return runs 2% above expected — the tailwind side of the return assumption, and a powerful one.`,
+      inherit:`A windfall of 50% of your starting assets lands 5 years before retirement, straight into the taxable account.`,
+    };
+    msg=notes[pick.cb]||"";
+  } else if(fx.key==="windfall"){
+    if(pick.amt>0){
+      const where = pick.bucket==="td" ? " It lands in a pre-tax account, so you'll owe income tax as you draw it." : "";
+      msg=`A <b>${fmt$(pick.amt)}</b> windfall.${where} ${pick.amt>=2e6?"The kind of break that rewrites the whole plan — and almost nobody actually spins it.":pick.amt>=500000?"A serious tailwind.":"A welcome boost — small windfalls like this are the most common outcome here."} Next spin sets <b>when</b> it arrives.`;
+    } else {
+      msg=`No life-changing windfall this run — by far the most likely result. The plan has to stand on its own.`;
+    }
+  } else if(fx.key==="windfallTiming"){
+    const wf=chosen.windfall; const amt=wf?wf.amt:0;
+    const da=P.retireAge+pick.offset;
+    msg = amt>0
+      ? `The <b>${fmt$(amt)}</b> arrives at age <b>${da}</b> (${pick.offset<0?`${-pick.offset} years before`:`${pick.offset} years after`} retirement). ${pick.offset<=-5?"Arriving early gives it the most years to compound — the biggest lift to your odds.":pick.offset<0?"A few years of pre-retirement growth before you'll lean on it.":"Arriving after you've retired, it cushions the drawdown but compounds for fewer years."}`
+      : `No windfall this run, so timing doesn't matter — on to the results.`;
+  }
+  $("#fx-note").innerHTML=msg;
+}
+
+$("#btn-spin").addEventListener("click", spin);
+$("#btn-respin").addEventListener("click", ()=>{
+  if(respins<=0 || !currentLanded) return;
+  respins--;
+  renderChips();
+  $("#respin-ct").textContent="("+respins+")";
+  spin();
+});
+$("#btn-next").addEventListener("click", ()=>{
+  const cur=FACTORS[stageIdx];
+  // If the windfall came up empty, skip the timing spin entirely
+  if(cur.key==="windfall" && chosen.windfall && chosen.windfall.amt===0){
+    chosen.windfallTiming={offset:-5, skipped:true, tag:"—", label:"No windfall — timing n/a"};
+    buildReview(); show("stage-review"); window.scrollTo({top:0,behavior:"smooth"}); return;
+  }
+  if(stageIdx<FACTORS.length-1){ stageIdx++; loadFactor(); window.scrollTo({top:0,behavior:"smooth"}); }
+  else { buildReview(); show("stage-review"); window.scrollTo({top:0,behavior:"smooth"}); }
+});
+
+/* ---------- Rail ---------- */
+function renderPips(){
+  const pips=$("#pips"); pips.innerHTML="";
+  for(let i=0;i<FACTORS.length;i++){
+    const d=document.createElement("span");
+    d.className="pip"+(chosen[FACTORS[i].key]?" done":"")+(i===stageIdx && !chosen[FACTORS[i].key]?" active":"");
+    if(i===stageIdx && currentLanded===false && !chosen[FACTORS[i].key]) d.classList.add("active");
+    pips.appendChild(d);
+  }
+}
+function renderChips(){
+  document.querySelectorAll(".chip").forEach((c,i)=>{
+    c.classList.toggle("spent", i >= respins);
+  });
+}
+
+/* ---------- Review ---------- */
+function buildReview(){
+  $("#review-lede").textContent=`${P.name} · retire at ${P.retireAge} · ${P.riskLabel} portfolio · plan through ${P.opts.longevity?100:P.horizon}.`;
+  const L=$("#ledger"); L.innerHTML="";
+  FACTORS.forEach((fx,i)=>{
+    const o=chosen[fx.key];
+    let extra="";
+    if(fx.key==="lifeEvent" && o.ltcAge!==null){
+      const entry=P.ltcToday*Math.pow(1.02, Math.max(0,o.ltcAge-P.age));
+      extra=` · ${fmt$(entry)}/yr at entry`;
+    }
+    const row=document.createElement("div");
+    row.className="ledger-row";
+    row.innerHTML=`<span class="n">0${i+1}</span><span class="lab">${fx.ledgerLabel}</span><span class="val">${o.label}${extra}</span>`;
+    L.appendChild(row);
+  });
+}
+
+/* ---------- Run + animate compute ---------- */
+$("#btn-run").addEventListener("click", ()=>{
+  $("#btn-run").style.display="none";
+  $("#computing").style.display="block";
+  const numEl=$("#compute-num"), barEl=$("#compute-bar");
+  let shown=0; const target=5000; const dur=1300; const t0=performance.now();
+  const animate=(now)=>{
+    const p=Math.min(1,(now-t0)/dur);
+    const ease=1-Math.pow(1-p,3);
+    shown=Math.floor(ease*target);
+    numEl.textContent=shown.toLocaleString();
+    barEl.style.width=(ease*100)+"%";
+    if(p<1) requestAnimationFrame(animate);
+    else { numEl.textContent="5,000"; finishRun(); }
+  };
+  requestAnimationFrame(animate);
+});
+/* ---------- Mitigations (advisor moves) + best-score chase ---------- */
+const MOVES=[
+  {key:"delay2",   label:"Delay retirement 2 years"},
+  {key:"spend10",  label:"Trim retirement spending 10%"},
+  {key:"ssDelay",  label:"Claim Social Security at 70"},
+  {key:"parttime", label:"Work part-time, first 5 yrs"},
+  {key:"save5k",   label:"Save $10k more per year"},
+  {key:"buffer",   label:"Hold a 2-year cash buffer"},
+  {key:"ltcins",   label:"Add long-term care insurance"},
+];
+const MOVE_CAP=3;
+let activeMit={};
+let bestPct=0;
+
+function renderMoveChips(){
+  const box=$("#mit-chips"); box.innerHTML="";
+  const used=Object.values(activeMit).filter(Boolean).length;
+  $("#mit-n").textContent=used;
+  MOVES.forEach(mv=>{
+    const on=!!activeMit[mv.key];
+    const disabled = !on && used>=MOVE_CAP;
+    const c=document.createElement("button");
+    c.type="button";
+    c.className="mit-chip"+(on?" on":"")+(disabled?" disabled":"");
+    c.innerHTML=`<span class="mc-box"></span><span class="mc-l">${mv.label}</span>`;
+    c.addEventListener("click", ()=>{
+      if(disabled) return;
+      activeMit[mv.key]=!activeMit[mv.key];
+      renderMoveChips();
+      runAndShow();
+    });
+    box.appendChild(c);
+  });
+}
+function runAndShow(){
+  const R=simulate(5000,140,activeMit, adjForSim());
+  lastResult=R;
+  renderResults(R);
+  updateBest(R);
+}
+
+/* ---------- Life adjustment (pick ONE scenario) ---------- */
+const ADJ={
+  eqLow:  {title:"Lower returns",  sub:"3–20% lower",    min:3, max:20, step:1, def:5,  unit:"% lower equity returns"},
+  expHigh:{title:"Higher spending",sub:"3–30% higher",   min:3, max:30, step:1, def:10, unit:"% higher retirement spending"},
+  inherit:{title:"Inheritance",    sub:"10–50% of assets",min:10,max:50, step:5, def:20, unit:"% of assets inherited", timing:true},
+};
+const ADJ_TIMINGS=[{o:-10,t:"−10y"},{o:-5,t:"−5y"},{o:-2,t:"−2y"},{o:2,t:"+2y"},{o:5,t:"+5y"}];
+let activeAdj={type:null, val:0, off:-5};
+const inheritEligible=()=> !(chosen.windfall && chosen.windfall.amt>0);
+function renderAdjOpts(){
+  const box=$("#adj-opts"); box.innerHTML="";
+  Object.keys(ADJ).forEach(k=>{
+    const cfg=ADJ[k], disabled=(k==="inherit" && !inheritEligible()), on=activeAdj.type===k;
+    const c=document.createElement("button"); c.type="button";
+    c.className="adj-opt"+(on?" on":"")+(disabled?" disabled":"");
+    c.innerHTML=`<span class="ao-t">${cfg.title}</span><span class="ao-s">${disabled?"needs no windfall":cfg.sub}</span>`;
+    c.addEventListener("click", ()=>{
+      if(disabled) return;
+      if(activeAdj.type===k){ activeAdj.type=null; }
+      else { activeAdj.type=k; activeAdj.val=cfg.def; activeAdj.off=-5; }
+      syncAdjUI(); runAndShow();
+    });
+    box.appendChild(c);
+  });
+}
+function renderTimingBtns(){
+  const box=$("#adj-timing-btns"); box.innerHTML="";
+  ADJ_TIMINGS.forEach(({o,t})=>{
+    const b=document.createElement("button"); b.type="button";
+    b.className="adj-tbtn"+(activeAdj.off===o?" on":""); b.textContent=t;
+    b.addEventListener("click", ()=>{ activeAdj.off=o; renderTimingBtns(); runAndShow(); });
+    box.appendChild(b);
+  });
+}
+function syncAdjUI(){
+  renderAdjOpts();
+  const wrap=$("#adj-slider-wrap"), tdiv=$("#adj-timing");
+  if(!activeAdj.type){ wrap.classList.remove("show"); return; }
+  const cfg=ADJ[activeAdj.type];
+  wrap.classList.add("show");
+  const s=$("#adj-slider"); s.min=cfg.min; s.max=cfg.max; s.step=cfg.step; s.value=activeAdj.val;
+  $("#adj-val").textContent=`${activeAdj.val}${cfg.unit}`;
+  if(cfg.timing){ tdiv.classList.add("show"); renderTimingBtns(); } else { tdiv.classList.remove("show"); }
+}
+$("#adj-slider").addEventListener("input", ()=>{
+  if(!activeAdj.type) return;
+  activeAdj.val=parseFloat($("#adj-slider").value);
+  $("#adj-val").textContent=`${activeAdj.val}${ADJ[activeAdj.type].unit}`;
+  runAndShow();
+});
+function adjForSim(){
+  if(!activeAdj.type) return null;
+  return { type:activeAdj.type, value:activeAdj.val/100, off:activeAdj.off };
+}
+function updateBest(R){
+  const pct=Math.round(R.successRate*100);
+  const pill=$("#best-pill"), nb=$("#newbest");
+  if(pct>bestPct){
+    bestPct=pct;
+    nb.classList.add("show");
+    setTimeout(()=>nb.classList.remove("show"), 1700);
+  }
+  pill.style.display="";
+  $("#best-pct").textContent=bestPct+"%";
+}
+
+function finishRun(){
+  activeMit={}; activeAdj={type:null, val:0, off:-5};
+  renderMoveChips(); syncAdjUI();
+  runAndShow();
+  setTimeout(()=>{ show("stage-results"); window.scrollTo({top:0,behavior:"smooth"});
+    $("#computing").style.display="none"; $("#btn-run").style.display=""; }, 260);
+}
+
+/* ---------- Results ---------- */
+function grade(rate){
+  if(rate>=0.90) return {cls:"grade-jade", word:"On Track", color:"#6FBF97"};
+  if(rate>=0.75) return {cls:"grade-jade", word:"Mostly On Track", color:"#6FBF97"};
+  if(rate>=0.50) return {cls:"grade-amber",word:"At Risk", color:"#D9A441"};
+  return {cls:"grade-rust", word:"Off Track", color:"#E0795F"};
+}
+function renderResults(R){
+  const pct=Math.round(R.successRate*100);
+  const g=grade(R.successRate);
+  const big=$("#r-bignum");
+  big.className="bignum "+g.cls;
+  big.innerHTML=pct+'<span class="pct">%</span>';
+  const v=$("#r-verdict"); v.className="verdict "+g.cls; v.textContent=g.word;
+  $("#r-sub").textContent=`${pct}% of 5,000 simulated lifetimes funded ${P.name}'s plan all the way through${R.deathAge<R.endAge?"":` age ${R.endAge}`}.`;
+  const m=$("#r-meter"); m.style.width="0%"; m.style.background=g.color;
+  requestAnimationFrame(()=>requestAnimationFrame(()=> m.style.width=pct+"%"));
+
+  // stats
+  const stats=$("#r-stats");
+  const planLen = R.endAge - R.startAge;
+  stats.innerHTML=`
+    <div class="stat"><div class="k">Median legacy</div><div class="v">${fmt$k(R.medLegacy)}</div></div>
+    <div class="stat"><div class="k">Downside (10th pct)</div><div class="v ${R.p10Legacy<=0?'grade-rust':''}">${fmt$k(R.p10Legacy)}</div></div>
+    <div class="stat"><div class="k">Plans that ran dry</div><div class="v ${R.fails>0?'grade-rust':'grade-jade'}">${R.fails.toLocaleString()}<span style="font-size:13px;color:var(--mist-dim)"> / 5,000</span></div></div>
+    <div class="stat"><div class="k">${R.medDepAge?'Typical shortfall age':'Plan horizon'}</div><div class="v small">${R.medDepAge?('Age '+R.medDepAge):('Age '+R.endAge)}</div></div>
+  `;
+
+  drawChart(R);
+  writeReadout(R, g);
+  $("#btn-help").style.display = R.successRate < 0.80 ? "flex" : "none";
+}
+
+/* ---------- Canvas: wealth paths ---------- */
+function drawChart(R){
+  const cv=$("#chart"); const dpr=Math.min(2,window.devicePixelRatio||1);
+  const W=cv.clientWidth||680, H=320;
+  cv.width=W*dpr; cv.height=H*dpr; cv.style.height=H+"px";
+  const ctx=cv.getContext("2d"); ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,W,H);
+  const padL=52, padR=14, padT=16, padB=26;
+  const x0=padL, x1=W-padR, y0=padT, y1=H-padB;
+  const startAge=R.startAge, endAge=R.endAge;
+  // max for scale: 90th pct of all path values, robust
+  let allEnds=[]; R.paths.forEach(p=>p.forEach(v=>allEnds.push(v)));
+  allEnds.sort((a,b)=>a-b);
+  const yMax=Math.max(P.assets*1.2, allEnds[Math.floor(allEnds.length*0.97)]||P.assets);
+  const ageX=a=> x0 + (x1-x0)*( (a-startAge)/Math.max(1,(endAge-startAge)) );
+  const valY=v=> y1 - (y1-y0)*( Math.max(0,Math.min(v,yMax))/yMax );
+
+  // grid
+  ctx.font="11px 'JetBrains Mono', monospace";
+  ctx.textBaseline="middle";
+  for(let i=0;i<=4;i++){
+    const val=yMax*i/4; const yy=valY(val);
+    ctx.strokeStyle="rgba(198,163,90,.10)"; ctx.beginPath(); ctx.moveTo(x0,yy); ctx.lineTo(x1,yy); ctx.stroke();
+    ctx.fillStyle="#5E727B"; ctx.textAlign="right"; ctx.fillText(fmt$k(val), x0-8, yy);
+  }
+  // x ticks (ages)
+  ctx.textAlign="center"; ctx.textBaseline="top";
+  const span=endAge-startAge;
+  const stepA = span>40?10: span>20?5:5;
+  for(let a=startAge; a<=endAge; a+=stepA){
+    ctx.fillStyle="#5E727B"; ctx.fillText(a, ageX(a), y1+6);
+  }
+  // retirement marker
+  if(P.retireAge>startAge && P.retireAge<endAge){
+    const rx=ageX(P.retireAge);
+    ctx.strokeStyle="rgba(231,206,146,.35)"; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(rx,y0); ctx.lineTo(rx,y1); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle="#C6A35A"; ctx.textAlign="center"; ctx.fillText("retire", rx, y0-2<0?y0+2:y0);
+  }
+  // sample paths
+  R.paths.forEach(path=>{
+    const ruined = path[path.length-1]<=0 && path.length<=(endAge-startAge);
+    ctx.strokeStyle = ruined ? "rgba(224,121,95,.16)" : "rgba(198,163,90,.13)";
+    ctx.lineWidth=1; ctx.beginPath();
+    path.forEach((v,i)=>{ const a=startAge+i; const xx=ageX(a), yy=valY(v); i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy); });
+    ctx.stroke();
+  });
+  // median path (recompute median across captured at each year)
+  const yearsN=endAge-startAge+1;
+  const med=[];
+  for(let i=0;i<yearsN;i++){
+    const col=[]; R.paths.forEach(p=>{ if(i<p.length) col.push(p[i]); else col.push(0); });
+    col.sort((a,b)=>a-b); med.push(col[Math.floor(col.length/2)]);
+  }
+  ctx.strokeStyle="#E7CE92"; ctx.lineWidth=2.4; ctx.beginPath();
+  med.forEach((v,i)=>{ const xx=ageX(startAge+i), yy=valY(v); i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy); });
+  ctx.stroke();
+  // zero line
+  ctx.strokeStyle="rgba(224,121,95,.5)"; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(x0,valY(0)); ctx.lineTo(x1,valY(0)); ctx.stroke();
+
+  $("#chart-cap").innerHTML=`Gold line = median outcome · faint lines = 160 sample lifetimes · red = ran dry`;
+}
+
+/* ---------- Narrative readout ---------- */
+function writeReadout(R,g){
+  const el=$("#r-read"); el.innerHTML="";
+  const flags=[];
+  const bo=chosen.badOffset.val, infl=chosen.inflation.val;
+  const ltcAge=R.ltcStart, deathOff=R.deathOff;          // resolved (may be null)
+  const reachesRetirement = (deathOff===null) || (deathOff>0);
+
+  // headline
+  const p=document.createElement("p");
+  p.innerHTML=`Across 5,000 randomized market histories — each carrying the curveballs you spun — ${P.name}'s plan stayed solvent in <b>${Math.round(R.successRate*100)}%</b> of them. ${R.fails>0?`In the ${R.fails.toLocaleString()} that failed, money typically ran out around age <b>${R.medDepAge}</b>.`:`Not one path ran dry.`}`;
+  el.appendChild(p);
+
+  // sequence risk (only relevant if the person actually reaches retirement)
+  if(reachesRetirement){
+    if(bo===0){
+      flags.push(["risk","↓",`<b>Sequence risk is the dominant threat here.</b> A 30% drop in the first retirement year forces selling into a trough — the most destructive timing for a portfolio. A cash buffer or bond ladder covering the first 2–3 years of spending is the classic defense.`]);
+    } else if(bo<=5){
+      flags.push(["risk","↓",`The crash lands early in retirement (age ${P.retireAge+bo}), so sequence-of-returns risk is meaningful — early losses are harder to recover from than late ones.`]);
+    }
+  }
+  // inflation
+  if(infl>=0.05){
+    flags.push(["risk","%",`<b>${(infl*100).toFixed(0)}% inflation is relentless.</b> Over a multi-decade retirement it roughly ${infl>=0.07?'quadruples':'more than doubles'} the cost of the same lifestyle. Growth assets and inflation-aware income (TIPS, rising SS COLA) matter more than any single crash.`]);
+  }
+  // LTC — only if it actually occurs
+  if(ltcAge!==null){
+    flags.push(["risk","+",`The long-term care event at age ${ltcAge} runs about <b>${fmt$(R.ltcEntryCost)}</b> in year one and ~<b>${fmt$(R.ltcEntryCost*6.2)}</b> over six years. This is exactly the lump-sum tail risk that LTC insurance, an HSA, or an earmarked reserve is designed to absorb.`]);
+  } else if(deathOff===null){
+    flags.push(["good","✓",`No care event and no early passing — this is the <b>full-longevity, no-health-shock</b> path. If the plan struggles even here, the core spending-vs-assets math needs attention before any insurance conversation.`]);
+  }
+  // early passing
+  if(deathOff!==null && deathOff<0){
+    flags.push(["good","♥",`<b>Passing before retirement made the plan "succeed" almost automatically</b> — there were simply fewer years to fund. That's the trap: the score hides the real exposure. With a median legacy near <b>${fmt$k(R.medLegacy)}</b>, the live question is whether survivors are protected. <b>This is the life-insurance conversation</b>, not a victory.`]);
+  } else if(deathOff!==null && deathOff>0){
+    flags.push(["good","♥",`Passing at age ${P.retireAge+deathOff} shortens the plan, which flatters the score. Read this as a legacy test — median legacy near <b>${fmt$k(R.medLegacy)}</b> — rather than proof the money would have lasted a full retirement.`]);
+  } else if(R.successRate>=0.9 && ltcAge!==null){
+    flags.push(["good","✓",`Even with the care event, the plan holds up, leaving a median legacy near <b>${fmt$k(R.medLegacy)}</b>. The work shifts from "will it last" to tax-efficient drawdown and estate planning.`]);
+  }
+
+  // the curveball (4th factor)
+  const cbFlags={
+    family:["risk","+",`The family-support drain (~$30k/yr for 5 years) lands right on top of the market crash — two shocks at once is what turns a survivable year into a damaging one.`],
+    jobLoss:["risk","↓",`The forced early retirement is doing real damage: five years of no income and no contributions, funded entirely by the portfolio right before it had to last. Disability and severance planning matter here.`],
+    panic:["risk","↓",`Selling into the crash and sitting in cash for three years locks in the loss and misses the rebound — behaviorally the most expensive mistake in the game. Staying invested is the lesson.`],
+    major:["risk","+",`The ${fmt$(100000)} purchase early in retirement is a lump-sum withdrawal during the highest-risk window. Funding big-ticket items from a cash sleeve, not the portfolio, protects the plan.`],
+    bear:["risk","↓",`A multi-year bear — not one bad year — is the harshest sequence risk there is. This is exactly what a few years of spending held outside equities is meant to buffer.`],
+    eqLow:["risk","%",`Returns running 3% light is the single largest drag in the model. It's the case for minimizing fees and keeping enough growth exposure — small return gaps compound enormously over decades.`],
+    expLow:["good","✓",`Spending 3% less every year is quietly powerful — a permanent, compounding tailwind that often moves the odds more than chasing returns.`],
+    eqHigh:["good","✓",`Returns running 2% ahead lifts the whole plan — the return assumption swings outcomes more than almost any single shock.`],
+    inherit:["good","♥",`The inheritance arrives before retirement, so it compounds through the highest-leverage years. Even so, plans built around an expected windfall are fragile — treat it as upside, not the base case.`],
+  };
+  if(R.cb && R.cb!=="none" && cbFlags[R.cb]) flags.push(cbFlags[R.cb]);
+
+  if(R.adjType){
+    const v=Math.round(R.adjVal*100);
+    const adjTxt={
+      eqLow:["risk","%",`Pressure-tested at <b>${v}% lower</b> equity returns. The return assumption is the loudest lever in any long-horizon plan — which is why a few points moves the score this much. The takeaway: fees and staying invested matter enormously.`],
+      expHigh:["risk","+",`Pressure-tested at <b>${v}% higher</b> retirement spending, inflating every year at the plan's rate. Lifestyle creep compounds, so even a modest bump meaningfully tightens the odds — a case for a written spending plan.`],
+      inherit:["good","★",`Modeled a <b>${v}% of assets</b> inheritance arriving ${R.adjOff<0?`${-R.adjOff} years before`:`${R.adjOff} years after`} retirement. Earlier inflows compound longer — but an expected inheritance is fragile, so treat it as upside, not the foundation.`],
+    }[R.adjType];
+    if(adjTxt) flags.push(adjTxt);
+  }
+
+  if(R.windfallAmt>0){
+    const at = R.windfallOff<0 ? `${-R.windfallOff} years before retirement (age ${R.windfallAge})` : `${R.windfallOff} years into retirement (age ${R.windfallAge})`;
+    flags.push(["good","★",`The <b>${fmt$(R.windfallAmt)}</b> windfall arrives ${at}, ${R.windfallOff<0?"compounding through your highest-leverage years":"cushioning the drawdown"} — a real lift to the odds. Worth remembering how rare a result like this is: a plan can't be built on a windfall that may never come.`]);
+  }
+
+  if(R.p10Legacy<=0 && R.successRate>=0.5){
+    flags.push(["risk","!",`Even though the plan usually works, the unluckiest tenth of outcomes end in shortfall. A modest cut to retirement spending or a 1–2 year later retirement date sharply tightens that downside.`]);
+  }
+
+  flags.slice(0,7).forEach(([kind,ic,txt])=>{
+    const d=document.createElement("div"); d.className="flag "+kind;
+    d.innerHTML=`<span class="ic">${ic}</span><span class="ftxt">${txt}</span>`;
+    el.appendChild(d);
+  });
+}
+
+/* ---------- Lead capture: save results + request help ---------- */
+/* ---- Lead delivery + phone verification ----
+   These read from the CONFIG block at the top of the script — no keys here.
+   In DEMO mode (endpoints blank) the code is generated locally and shown on
+   screen so the flow is testable; replace with server verification before launch. */
+const LEAD_ENDPOINT = CONFIG.LEAD_ENDPOINT;
+const OTP = { sendEndpoint: CONFIG.OTP_SEND_ENDPOINT, verifyEndpoint: CONFIG.OTP_VERIFY_ENDPOINT };
+
+function buildLead(contact){
+  const R=lastResult;
+  return {
+    intent: modalMode,
+    submittedAt: new Date().toISOString(),
+    name: contact.name, email: contact.email, phone: contact.phone, phoneVerified: true,
+    successRate: Math.round(R.successRate*100),
+    plan: { name:P.name, age:P.age, retireAge:P.retireAge, planThrough:P.opts.longevity?100:P.horizon,
+      assets:P.assets, income:P.income, expNow:P.expNow, expRet:P.expRet, riskLabel:P.riskLabel },
+    factors: FACTORS.map(fx=>({factor:fx.ledgerLabel, choice:chosen[fx.key]?chosen[fx.key].label:""})),
+    advisorMoves: MOVES.filter(m=>activeMit[m.key]).map(m=>m.label),
+    lifeAdjustment: activeAdj.type ? `${activeAdj.val}${ADJ[activeAdj.type].unit}` : null,
+    summary: buildResultText(contact)
+  };
+}
+
+/* ---- Sponsorship slot ---- controlled by CONFIG.SPONSOR at the top of the script.
+   Set show:true and fill it in to display a clearly-labeled sponsor card. Keep it
+   identifiable as advertising; coordinate any paid placement with compliance. */
+const SPONSOR = CONFIG.SPONSOR;
+function renderSponsor(){
+  document.querySelectorAll(".sponsor-slot").forEach(el=>{
+    if(!SPONSOR.show || !SPONSOR.name){ el.style.display="none"; return; }
+    el.style.display="flex";
+    el.innerHTML = `<span class="spon-tag">${SPONSOR.label}</span>`
+      + `<div class="spon-body"><b>${SPONSOR.name}</b>${SPONSOR.blurb?` — ${SPONSOR.blurb}`:""}</div>`
+      + (SPONSOR.url?`<a class="spon-cta" href="${SPONSOR.url}" target="_blank" rel="noopener">${SPONSOR.cta} →</a>`:"");
+  });
+}
+renderSponsor();
+
+function buildResultText(contact){
+  const R=lastResult, pct=Math.round(R.successRate*100);
+  const lines=[
+    `THE LONG GAME — Retirement Stress Test`,
+    `Generated ${new Date().toLocaleDateString()}`,
+    ``,
+    `Client: ${P.name}`,
+  ];
+  if(contact){
+    lines.push(`Contact: ${contact.name}  ·  ${contact.email}${contact.phone?`  ·  ${contact.phone}`:""}`);
+  }
+  lines.push(
+    ``,
+    `RESULT — ${pct}% probability of success  (${grade(R.successRate).word})`,
+    `across 5,000 simulated lifetimes.`,
+    ``,
+    `Median legacy: ${fmt$k(R.medLegacy)}`,
+    `Downside, 10th percentile: ${fmt$k(R.p10Legacy)}`,
+    `Plans that ran dry: ${R.fails.toLocaleString()} / 5,000`,
+    ``,
+    `ASSUMPTIONS`,
+    `  Age ${P.age} · retire ${P.retireAge} · plan through ${P.opts.longevity?100:P.horizon}`,
+    `  Investable assets: ${fmt$(P.assets)}  ·  liabilities: ${fmt$(P.liab)}`,
+    `  Income: ${fmt$(P.income)}  ·  eff. tax ${(P.tax*100).toFixed(1)}%`,
+    `  Social Security: ${fmt$(P.ss)}/yr from age ${P.ssAge}`,
+    `  Expenses: ${fmt$(P.expNow)} now / ${fmt$(P.expRet)} in retirement`,
+    `  Saving: ${fmt$(P.saveAnnual)}/yr retirement (match ${P.matchPct}%) + ${fmt$(P.saveMonthly)}/mo taxable`,
+    `  Portfolio: ${P.riskLabel}  ·  LTC private room: ${fmt$(P.ltcToday)}/yr`,
+    ``,
+    `CURVEBALLS SPUN`,
+    ...FACTORS.map(fx=>`  • ${fx.ledgerLabel}: ${chosen[fx.key].label}`),
+    ...(Object.values(activeMit).some(Boolean) ? [``,`ADVISOR MOVES APPLIED`, ...MOVES.filter(m=>activeMit[m.key]).map(m=>`  ✓ ${m.label}`)] : []),
+    ...(activeAdj.type ? [``,`LIFE ADJUSTMENT`,`  • ${activeAdj.val}${ADJ[activeAdj.type].unit}`+(ADJ[activeAdj.type].timing?` (${activeAdj.off<0?-activeAdj.off+" yrs pre-retire":activeAdj.off+" yrs post-retire"})`:``)] : []),
+    ``,
+    `Educational simulation — not financial advice or a guarantee of results.`
+  );
+  return lines.join("\n");
+}
+function downloadText(filename, text){
+  try{
+    const blob=new Blob([text],{type:"text/plain"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a"); a.href=url; a.download=filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 1500);
+    return true;
+  }catch(e){ return false; }
+}
+
+let modalMode="save";
+function openModal(mode){
+  modalMode=mode;
+  $("#c-err").textContent=""; $("#c-code-err").textContent="";
+  $("#c-done").classList.remove("show"); $("#c-verify").classList.remove("show");
+  $("#c-devnote").style.display="none"; $("#c-code").value="";
+  $("#c-submit").style.display=""; document.querySelectorAll(".modal-card .m-field, #c-submit, .m-fine").forEach(el=>el.style.display="");
+  if(mode==="help"){
+    $("#modal-eyebrow").textContent="Improve your odds";
+    $("#modal-title").textContent="Let's pressure-test this together";
+    $("#modal-lede").textContent="Share your details and an advisor will reach out about strengthening the plan.";
+    $("#c-submit").textContent="Text me a code";
+  } else {
+    $("#modal-eyebrow").textContent="Save your results";
+    $("#modal-title").textContent="Where should we send it?";
+    $("#modal-lede").textContent="Confirm your mobile number to unlock and save this plan.";
+    $("#c-submit").textContent="Text me a code";
+  }
+  $("#modal").classList.add("show"); $("#modal").setAttribute("aria-hidden","false");
+  setTimeout(()=>$("#c-name").focus(), 60);
+}
+function closeModal(){ $("#modal").classList.remove("show"); $("#modal").setAttribute("aria-hidden","true"); }
+
+$("#btn-save").addEventListener("click", ()=>{ if(lastResult) openModal("save"); });
+$("#btn-help").addEventListener("click", ()=> openModal("help"));
+$("#modal-x").addEventListener("click", closeModal);
+$("#c-done-close").addEventListener("click", closeModal);
+$("#modal").addEventListener("click", e=>{ if(e.target===$("#modal")) closeModal(); });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape" && $("#modal").classList.contains("show")) closeModal(); });
+
+let pendingContact=null, devCode=null;
+
+async function sendCode(phone){
+  if(OTP.sendEndpoint){
+    const res=await fetch(OTP.sendEndpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({phone})});
+    if(!res.ok){ let m=""; try{ const j=await res.json(); m=j.error||""; }catch(e){} throw new Error(m||"send failed"); }
+    $("#c-devnote").style.display="none";
+  } else {
+    devCode=String(Math.floor(100000+Math.random()*900000));     // DEMO ONLY — replace with real SMS
+    $("#c-devnote").textContent=`Demo mode — no real text sent. Your code is ${devCode}. (Wire OTP.sendEndpoint to Twilio Verify for production.)`;
+    $("#c-devnote").style.display="";
+  }
+}
+async function verifyCode(phone, code){
+  if(OTP.verifyEndpoint){
+    const res=await fetch(OTP.verifyEndpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({phone,code})});
+    if(!res.ok) return false;
+    const j=await res.json().catch(()=>({})); return !!j.ok;
+  }
+  return code===devCode;     // DEMO ONLY
+}
+function deliverPlan(){
+  const summary=buildResultText(pendingContact);
+  if(LEAD_ENDPOINT){
+    try{ fetch(LEAD_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(buildLead(pendingContact))}).catch(()=>{}); }catch(e){}
+  }
+  const fname=`the-long-game-${pendingContact.name.replace(/[^\w]+/g,"-").toLowerCase()}.txt`;
+  const saved=downloadText(fname, summary);
+  document.querySelectorAll(".modal-card .m-field, #c-submit, .m-fine, .m-verify").forEach(el=>el.style.display="none");
+  $("#c-verify").classList.remove("show");
+  $("#c-done-title").textContent = modalMode==="help" ? "Request sent." : "Saved.";
+  $("#c-done-msg").innerHTML = modalMode==="help"
+    ? `Thanks, ${pendingContact.name}. An advisor will reach out at <b>${pendingContact.phone}</b> to walk through ways to lift your odds.${saved?" A copy of your results just downloaded.":""}`
+    : (saved ? `Number confirmed. A copy downloaded as <b>${fname}</b>, and we'll follow up at <b>${pendingContact.phone}</b>.`
+             : `Number confirmed. We'll reach out at <b>${pendingContact.phone}</b>.`);
+  $("#c-done").classList.add("show");
+}
+
+$("#c-submit").addEventListener("click", async ()=>{
+  const name=$("#c-name").value.trim(), email=$("#c-email").value.trim(), phone=$("#c-phone").value.trim();
+  const emailOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const digits=phone.replace(/\D/g,"");
+  if(!name){ $("#c-err").textContent="Please add your name."; return; }
+  if(!emailOk){ $("#c-err").textContent="Please enter a valid email."; return; }
+  if(digits.length<10){ $("#c-err").textContent="Please enter a valid mobile number."; return; }
+  $("#c-err").textContent="";
+  pendingContact={name,email,phone};
+  $("#c-submit").disabled=true; $("#c-submit").textContent="Sending…";
+  try{ await sendCode(phone); }
+  catch(e){ $("#c-err").textContent = e && e.message && e.message!=="send failed" ? ("Twilio: "+e.message) : "Couldn't send a code — check the number and try again."; $("#c-submit").disabled=false; $("#c-submit").textContent="Text me a code"; return; }
+  $("#c-submit").disabled=false; $("#c-submit").textContent="Text me a code";
+  document.querySelectorAll(".modal-card .m-field, #c-submit, .m-fine").forEach(el=>el.style.display="none");
+  $("#modal-lede").textContent=`Enter the code we sent to ${phone}.`;
+  $("#c-verify").classList.add("show");
+  setTimeout(()=>$("#c-code").focus(), 60);
+});
+
+$("#c-verify-btn").addEventListener("click", async ()=>{
+  const code=$("#c-code").value.trim();
+  if(code.length<6){ $("#c-code-err").textContent="Enter the 6-digit code."; return; }
+  $("#c-code-err").textContent=""; $("#c-verify-btn").disabled=true; $("#c-verify-btn").textContent="Verifying…";
+  let ok=false;
+  try{ ok=await verifyCode(pendingContact.phone, code); }catch(e){ ok=false; }
+  $("#c-verify-btn").disabled=false; $("#c-verify-btn").textContent="Verify & unlock my plan";
+  if(!ok){ $("#c-code-err").textContent="That code didn't match. Try again or resend."; return; }
+  deliverPlan();
+});
+
+$("#c-resend").addEventListener("click", async ()=>{
+  if(!pendingContact) return;
+  $("#c-code-err").textContent="";
+  try{ await sendCode(pendingContact.phone); $("#c-code-err").style.color="var(--jade-hi)"; $("#c-code-err").textContent="A new code is on its way."; }
+  catch(e){ $("#c-code-err").style.color=""; $("#c-code-err").textContent="Couldn't resend — try again."; }
+  setTimeout(()=>{ $("#c-code-err").style.color=""; }, 2000);
+});
+
+/* ---------- Replay / spin again ---------- */
+$("#btn-replay").addEventListener("click", ()=>{
+  chosen={}; stageIdx=0; respins=1; currentLanded=false; activeMit={}; activeAdj={type:null,val:0,off:-5}; bestPct=0;
+  $("#rail").style.display="none";
+  show("stage-intake"); window.scrollTo({top:0,behavior:"smooth"});
+});
+// Spin again — keep the same plan, re-roll the factors, chase a better score
+$("#btn-spin-again").addEventListener("click", ()=>{
+  chosen={}; stageIdx=0; respins=1; currentLanded=false; activeMit={}; activeAdj={type:null,val:0,off:-5};
+  renderChips(); renderPips();
+  $("#rail").style.display="flex";
+  $("#btn-run").style.display=""; $("#computing").style.display="none";
+  show("stage-factor"); loadFactor(); window.scrollTo({top:0,behavior:"smooth"});
+});
+
+/* ---------- Stage switch ---------- */
+function show(id){
+  document.querySelectorAll(".stage").forEach(s=>s.classList.remove("on"));
+  $("#"+id).classList.add("on");
+}
+</script>
+</body>
+</html>

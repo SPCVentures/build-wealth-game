@@ -1,0 +1,10 @@
+# Netlify config — tells Netlify where the site and the functions live.
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+# Use a modern Node runtime (global fetch is built in — no npm installs needed)
+[functions]
+  node_bundler = "esbuild"
+[build.environment]
+  NODE_VERSION = "20"
