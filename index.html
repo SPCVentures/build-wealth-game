@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root{
     --ink:#0C1418; --ink-2:#10202A; --ink-3:#16323F;
@@ -1711,6 +1713,113 @@ function downloadText(filename, text){
   }catch(e){ return false; }
 }
 
+/* ---------- Branded PDF report ---------- */
+const PDF_CSS = `
+.pdfrep{position:fixed; left:-10000px; top:0; width:760px; box-sizing:border-box; padding:46px 50px 34px;
+  background:#0C1418; color:#F2ECDE; font-family:'Inter',sans-serif; line-height:1.45;
+  border:1px solid rgba(198,163,90,.28)}
+.pdfrep *{box-sizing:border-box}
+.pdfrep .kick{font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.26em; text-transform:uppercase; color:#C6A35A; display:flex; align-items:center; gap:14px}
+.pdfrep .kick .rule{height:1px; flex:1; background:linear-gradient(90deg,#8A7338,rgba(138,115,56,0))}
+.pdfrep h1{font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:33px; color:#FBF7EC; margin:18px 0 6px; letter-spacing:-.01em}
+.pdfrep .meta{font-family:'JetBrains Mono',monospace; font-size:11px; color:#8A7338; letter-spacing:.02em}
+.pdfrep .hero{display:flex; align-items:flex-end; gap:22px; margin:30px 0 0}
+.pdfrep .big{font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:76px; line-height:.86}
+.pdfrep .big .pc{font-size:34px; opacity:.7}
+.pdfrep .verdict{font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:.22em; text-transform:uppercase; padding-bottom:14px}
+.pdfrep .sub{font-size:13px; color:#F2ECDE; opacity:.82; margin-top:12px; max-width:600px}
+.pdfrep .stats{display:flex; gap:14px; margin:26px 0 0}
+.pdfrep .stat{flex:1; border:1px solid rgba(198,163,90,.22); border-radius:11px; padding:14px 16px; background:rgba(255,255,255,.018)}
+.pdfrep .stat .l{font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:#C6A35A}
+.pdfrep .stat .v{font-family:'JetBrains Mono',monospace; font-size:22px; color:#FBF7EC; margin-top:8px}
+.pdfrep .sec{margin-top:28px}
+.pdfrep .sh{font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; color:#C6A35A; display:flex; align-items:center; gap:14px; margin-bottom:14px}
+.pdfrep .sh .rule{height:1px; flex:1; background:linear-gradient(90deg,#8A7338,rgba(138,115,56,0))}
+.pdfrep .grid{display:grid; grid-template-columns:1fr 1fr; gap:8px 34px}
+.pdfrep .kv{display:flex; justify-content:space-between; gap:14px; font-size:12.5px; border-bottom:1px dotted rgba(198,163,90,.18); padding-bottom:7px}
+.pdfrep .kv .k{color:#C6A35A; opacity:.95}
+.pdfrep .kv .vv{font-family:'JetBrains Mono',monospace; color:#F2ECDE; text-align:right}
+.pdfrep .frow{display:flex; align-items:baseline; gap:14px; padding:9px 0; border-bottom:1px solid rgba(198,163,90,.1)}
+.pdfrep .frow .n{font-family:'JetBrains Mono',monospace; font-size:11px; color:#C6A35A; width:24px; flex:none}
+.pdfrep .frow .fl{font-size:13px; color:#F2ECDE; flex:1}
+.pdfrep .frow .fv{font-family:'Fraunces',Georgia,serif; font-size:14.5px; color:#E7CE92; text-align:right; max-width:360px}
+.pdfrep .mv{display:flex; align-items:center; gap:11px; font-size:12.5px; color:#F2ECDE; padding:5px 0}
+.pdfrep .mv .ck{color:#6FBF97; font-family:'JetBrains Mono',monospace; font-size:13px}
+.pdfrep .foot{margin-top:30px; padding-top:16px; border-top:1px solid rgba(198,163,90,.22); display:flex; justify-content:space-between; align-items:flex-end; gap:24px}
+.pdfrep .foot .dis{font-family:'JetBrains Mono',monospace; font-size:9px; color:#8A7338; letter-spacing:.02em; line-height:1.5; max-width:500px}
+.pdfrep .foot .wm{font-family:'Fraunces',Georgia,serif; font-style:italic; font-size:14px; color:#C6A35A; white-space:nowrap}
+`;
+function pdfSafe(s){ return (String(s||"plan").replace(/[^\w\-]+/g,"_").replace(/^_+|_+$/g,"")) || "plan"; }
+function buildReportNode(contact){
+  if(!document.getElementById("pdfrep-style")){
+    const st=document.createElement("style"); st.id="pdfrep-style"; st.textContent=PDF_CSS; document.head.appendChild(st);
+  }
+  const R=lastResult, pct=Math.round(R.successRate*100), g=grade(R.successRate);
+  const through=P.opts.longevity?100:P.horizon;
+  const kv=(k,v)=>`<div class="kv"><span class="k">${k}</span><span class="vv">${v}</span></div>`;
+  const assum=[
+    kv("Age / Retire", `${P.age} &rarr; ${P.retireAge}`),
+    kv("Plan through", `age ${through}`),
+    kv("Investable assets", fmt$(P.assets)),
+    kv("Liabilities", fmt$(P.liab)),
+    kv("Income", fmt$(P.income)),
+    kv("Eff. tax rate", `${(P.tax*100).toFixed(1)}%`),
+    kv("Social Security", `${fmt$(P.ss)}/yr @ ${P.ssAge}`),
+    kv("Spend now / retire", `${fmt$(P.expNow)} / ${fmt$(P.expRet)}`),
+    kv("Saving", `${fmt$(P.saveAnnual)}/yr + ${fmt$(P.saveMonthly)}/mo`),
+    kv("Portfolio", P.riskLabel)
+  ].join("");
+  const factors=FACTORS.map((fx,i)=>`<div class="frow"><span class="n">${i<9?"0":""}${i+1}</span><span class="fl">${fx.ledgerLabel}</span><span class="fv">${chosen[fx.key]?chosen[fx.key].label:"&mdash;"}</span></div>`).join("");
+  const moves=MOVES.filter(m=>activeMit[m.key]);
+  const movesHtml = moves.length ? `<div class="sec"><div class="sh">Advisor moves applied<span class="rule"></span></div>${moves.map(m=>`<div class="mv"><span class="ck">&#10003;</span>${m.label}</div>`).join("")}</div>` : "";
+  const adjHtml = activeAdj.type ? `<div class="sec"><div class="sh">Life adjustment<span class="rule"></span></div><div class="mv"><span class="ck" style="color:#E7CE92">&#9670;</span>${activeAdj.val}${ADJ[activeAdj.type].unit}${ADJ[activeAdj.type].timing?` (${activeAdj.off<0?(-activeAdj.off)+" yrs pre-retire":activeAdj.off+" yrs post-retire"})`:""}</div></div>` : "";
+  const node=document.createElement("div");
+  node.className="pdfrep";
+  node.innerHTML=`
+    <div class="kick">&#9670; The Long Game<span class="rule"></span>Retirement Stress Test</div>
+    <h1>${P.name}&rsquo;s Plan</h1>
+    <div class="meta">Prepared for ${contact?contact.name:P.name}${contact&&contact.email?"&nbsp;&nbsp;&middot;&nbsp;&nbsp;"+contact.email:""}&nbsp;&nbsp;&middot;&nbsp;&nbsp;${new Date().toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"})}</div>
+    <div class="hero">
+      <div class="big" style="color:${g.color}">${pct}<span class="pc">%</span></div>
+      <div class="verdict" style="color:${g.color}">${g.word}</div>
+    </div>
+    <div class="sub">${pct}% of 5,000 simulated lifetimes funded this plan in full &mdash; accounting for inflation, the timing of a market crash, longevity and care, and the curveballs that were spun.</div>
+    <div class="stats">
+      <div class="stat"><div class="l">Median legacy</div><div class="v">${fmt$k(R.medLegacy)}</div></div>
+      <div class="stat"><div class="l">Downside &middot; 10th pct</div><div class="v">${fmt$k(R.p10Legacy)}</div></div>
+      <div class="stat"><div class="l">Plans that ran dry</div><div class="v">${R.fails.toLocaleString()}<span style="font-size:12px;color:#8A7338"> / 5,000</span></div></div>
+    </div>
+    <div class="sec"><div class="sh">Assumptions<span class="rule"></span></div><div class="grid">${assum}</div></div>
+    <div class="sec"><div class="sh">The six factors<span class="rule"></span></div>${factors}</div>
+    ${movesHtml}
+    ${adjHtml}
+    <div class="foot"><div class="dis">Educational simulation &mdash; illustrative only, not financial advice, an offer, or a guarantee of results. Figures reflect the assumptions shown above and will change as those inputs change.</div><div class="wm">The Long Game</div></div>
+  `;
+  return node;
+}
+async function generatePDF(contact){
+  if(!window.jspdf || !window.html2canvas) return false;
+  const node=buildReportNode(contact);
+  document.body.appendChild(node);
+  try{
+    if(document.fonts && document.fonts.ready){ try{ await document.fonts.ready; }catch(e){} }
+    await new Promise(r=>setTimeout(r,50));
+    const canvas=await window.html2canvas(node,{scale:2, backgroundColor:"#0C1418", useCORS:true, logging:false, width:node.offsetWidth, height:node.offsetHeight, windowWidth:node.offsetWidth});
+    const { jsPDF }=window.jspdf;
+    const pdf=new jsPDF({orientation:"portrait", unit:"pt", format:"letter"});
+    const pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight();
+    pdf.setFillColor(12,20,24); pdf.rect(0,0,pw,ph,"F");
+    const margin=20, maxW=pw-margin*2, maxH=ph-margin*2;
+    let w=maxW, h=canvas.height*(w/canvas.width);
+    if(h>maxH){ h=maxH; w=canvas.width*(h/canvas.height); }
+    const x=(pw-w)/2, y=(ph-h)/2;
+    pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, y, w, h);
+    pdf.save(`The-Long-Game-${pdfSafe(contact?contact.name:P.name)}.pdf`);
+    return true;
+  }catch(e){ console.error("PDF error", e); return false; }
+  finally{ node.remove(); }
+}
+
 let modalMode="save";
 function openModal(mode){
   modalMode=mode;
@@ -1762,21 +1871,26 @@ async function verifyCode(phone, code){
   }
   return code===devCode;     // DEMO ONLY
 }
-function deliverPlan(){
-  const summary=buildResultText(pendingContact);
+async function deliverPlan(){
   if(LEAD_ENDPOINT){
     try{ fetch(LEAD_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(buildLead(pendingContact))}).catch(()=>{}); }catch(e){}
   }
-  const fname=`the-long-game-${pendingContact.name.replace(/[^\w]+/g,"-").toLowerCase()}.txt`;
-  const saved=downloadText(fname, summary);
   document.querySelectorAll(".modal-card .m-field, #c-submit, .m-fine, .m-verify").forEach(el=>el.style.display="none");
   $("#c-verify").classList.remove("show");
   $("#c-done-title").textContent = modalMode==="help" ? "Request sent." : "Saved.";
-  $("#c-done-msg").innerHTML = modalMode==="help"
-    ? `Thanks, ${pendingContact.name}. An advisor will reach out at <b>${pendingContact.phone}</b> to walk through ways to lift your odds.${saved?" A copy of your results just downloaded.":""}`
-    : (saved ? `Number confirmed. A copy downloaded as <b>${fname}</b>, and we'll follow up at <b>${pendingContact.phone}</b>.`
-             : `Number confirmed. We'll reach out at <b>${pendingContact.phone}</b>.`);
+  $("#c-done-msg").innerHTML = "Preparing your plan&hellip;";
   $("#c-done").classList.add("show");
+  let ok=false, label="a PDF";
+  try{ ok=await generatePDF(pendingContact); }catch(e){ ok=false; }
+  if(!ok){
+    const fname=`the-long-game-${pdfSafe(pendingContact.name).toLowerCase()}.txt`;
+    ok=downloadText(fname, buildResultText(pendingContact));
+    label=`<b>${fname}</b>`;
+  } else { label="<b>a PDF</b>"; }
+  $("#c-done-msg").innerHTML = modalMode==="help"
+    ? `Thanks, ${pendingContact.name}. An advisor will reach out at <b>${pendingContact.phone}</b> to walk through ways to lift your odds.${ok?` Your results also downloaded as ${label}.`:""}`
+    : (ok ? `Number confirmed. Your plan downloaded as ${label}, and we'll follow up at <b>${pendingContact.phone}</b>.`
+          : `Number confirmed. We'll reach out at <b>${pendingContact.phone}</b>.`);
 }
 
 $("#c-submit").addEventListener("click", async ()=>{
