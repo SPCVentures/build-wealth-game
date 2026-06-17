@@ -1795,6 +1795,7 @@ $("#c-submit").addEventListener("click", async ()=>{
   document.querySelectorAll(".modal-card .m-field, #c-submit, .m-fine").forEach(el=>el.style.display="none");
   $("#modal-lede").textContent=`Enter the code we sent to ${phone}.`;
   $("#c-verify").classList.add("show");
+  $("#c-code").closest(".m-field").style.display="";
   setTimeout(()=>$("#c-code").focus(), 60);
 });
 
